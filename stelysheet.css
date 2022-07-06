@@ -1,0 +1,117 @@
+/* below is the landing page */
+.menuBtnsDiv{
+    position: absolute;
+    top: 150px;
+    left: 400px;
+    width: 700px;
+    height: 400px;
+    display: block;
+}
+.buttonClass{
+    font-size: 20px;
+    font-weight: bolder;
+    width: 400px;
+    height: 100px;
+    margin: 10px;
+    margin-left: 140px;
+    background-color: antiquewhite;
+}
+.buttonClass:hover{
+    background-color: aqua;
+    cursor: pointer;
+    transform: scale(1.1);
+}
+body{
+    background-color: rgb(249, 125, 146);
+}
+/* stop landing page
+
+start about page*/
+
+.aboutPage{
+    position: absolute;
+    top: -50px;
+    left: 0px;
+    width: 700px;
+    height: 600px;
+    border: black solid 2px;
+    background-color: bisque;
+}
+.imgInAbout{
+    float: left;
+    margin-top: 150px;
+    margin-left: 20px;
+    height: 300px;
+    width: 250px;
+    background-color: aliceblue;
+}
+.imgInAbout p{
+    margin-top: 300px;
+    float: right;
+}
+.buttonNextAbout{
+    position: absolute;
+    bottom: 0px;
+    height: 50px;
+    width: 100px;
+    right: 150px;
+}
+.buttonPreviousAbout{
+    position: absolute;
+    bottom: 0px;
+    height: 50px;
+    width: 100px;
+    left: 150px;
+}
+.aboutBack{
+    position: absolute;
+    top: -120px;
+    left: -300px;
+    height: 100px;
+    width: 200px;
+}
+/* end of about
+and start of drawingPage */
+.divForBtns{
+    position: absolute;
+    height: 700px;
+    width: 250px;
+    top: -130px;
+    right: -400px;
+    background-color: rgb(226, 226, 226);
+    border: solid black 3px;
+}
+.btnInDrawDiv{
+    width: 250px;
+    height: 50px;
+    margin-top: 10px;
+    background-color: pink;
+    color: black;
+    font-size: 20px;
+    font-weight: 600;
+    -webkit-box-shadow: 5px 9px 15px 5px rgba(0,0,0,0.67); 
+    box-shadow: 5px 9px 15px 5px rgba(0,0,0,0.67);
+    border-radius: 3%;
+}
+.btnInDrawDiv:hover{
+    background-color: rgb(254, 110, 134);
+}
+.btnInDrawDivMenu{
+    position: absolute;
+    bottom: 10px;
+    left: 0px;
+    width: 250px;
+    height: 50px;
+    margin-top: 10px;
+    background-color: pink;
+    color: black;
+    font-weight: bold;
+    font-size: 20px;
+    -webkit-box-shadow: 5px 9px 15px 5px rgba(0,0,0,0.67); 
+    box-shadow: 5px 9px 15px 5px rgba(0,0,0,0.67);
+    border-radius: 3%;
+    
+}
+.btnInDrawDivMenu:hover{
+    background-color: rgb(254, 110, 134);
+}
