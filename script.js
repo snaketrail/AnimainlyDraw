@@ -34,7 +34,7 @@ function loadStart(){
     menuBtnsDiv.appendChild(disclaimer);
 
     exitButton.addEventListener('click', () =>{
-        location.href = '';
+        location.href = 'https://www.google.com/';
     })
 
     drawButton.addEventListener('click' , loadDrawing);
