@@ -1,4 +1,4 @@
-window.addEventListener('load', loadStart)
+window.addEventListener('load', loadStart);
 
 const menuBtnsDiv = document.getElementsByTagName('div')[0];
 function clear(){
@@ -21,7 +21,8 @@ function loadStart(){
 
     let visitButton = document.createElement('button');
     visitButton.classList = 'buttonClass';
-    visitButton.innerText = 'Visit Website';
+    visitButton.innerText = 'Visit Website(not working)';
+    visitButton.setAttribute('disabled', true)
     menuBtnsDiv.appendChild(visitButton);
 
     let exitButton = document.createElement('button');
@@ -75,7 +76,20 @@ function loadStart(){
         let btn6 = document.createElement('button');
         btn6.innerText = 'Main Menu';
         btn6.addEventListener('click', loadStart);
-
+        let btn7 = document.createElement('button');
+        btn7.innerText = 'Clear Canvas';
+        btn7.addEventListener('click', clearCnavas);
+        function clearCnavas(){
+            while(canva.firstChild){
+                canva.removeChild(canva.firstChild);
+            };
+        };
+        let btn8 = document.createElement('button');
+        btn8.innerText = 'Undo';
+        btn8.addEventListener('click', undoIt);
+        function undoIt(){
+            canva.removeChild(canva.lastChild);
+        }
         
         divForButtons.appendChild(btn1);
         divForButtons.appendChild(btn2);
@@ -83,6 +97,8 @@ function loadStart(){
         divForButtons.appendChild(btn4);
         divForButtons.appendChild(btn5);
         divForButtons.appendChild(btn6);
+        divForButtons.appendChild(btn7);
+        divForButtons.appendChild(btn8);
 
         btn1.className = 'btnInDrawDiv';
         btn2.className = 'btnInDrawDiv';
@@ -90,45 +106,54 @@ function loadStart(){
         btn4.className = 'btnInDrawDiv';
         btn5.className = 'btnInDrawDiv';
         btn6.className = 'btnInDrawDivMenu';
+        btn7.className = 'btnInDrawDiv';
+        btn8.className = 'btnInDrawDiv';
 
+        btn1.addEventListener('click', addBackground);
+        function addBackground(){
+            clearCnavas(); //this needs to remove child if it's class name is background!!!
+            let url = 'background1.png';
+            let img = document.createElement('img');
+            img.src = url;
+            img.setAttribute('width', '1200');
+            img.setAttribute('height', '700');
+            canva.appendChild(img);
+        };
+
+        btn2.addEventListener('click', () =>{
+
+            let img = document.createElement('img');
+            img.className = 'draggable';
+            img.src = 'animeGirl.png';
+            img.setAttribute('width', '500');
+            img.setAttribute('height', '300');
+            canva.appendChild(img);
+
+            const position = { x: 0, y: 0 }
+
+            interact('.draggable').draggable({
+                listeners: {
+                    start (event) {
+                        // console.log(event.type, event.target);
+                    },
+                    move (event) {
+                        position.x += event.dx
+                        position.y += event.dy
+
+                        event.target.style.transform =
+                            `translate(${position.x}px, ${position.y}px)`;
+                    },
+                }
+            })
+        });
 
         btn6.addEventListener('click', () =>{
             clear();
             loadStart();
         });
 
-        btn2.addEventListener('click', () =>{
-
-            let img = document.createElement('img');
-            img.src = 'animeGirl.png';
-            img.setAttribute('width', '500');
-            img.setAttribute('height', '300');
-            img.setAttribute('draggable', true);
-            canva.appendChild(img);
-            img.style.position = 'absolute';
-            img.style.top = '200px';
-            img.style.left = '350px';
-            let dragged = null;
-
-            img.addEventListener('drag', (e) =>{
-                let cursorX = e.pageX;
-                let cursorY = e.pageY;
-                img.style.left = cursorX/3 +'px';
-                img.style.top = cursorY/3 +'px';
-
-                img.style.border = 'solid black 5px';
-            });
-            img.addEventListener('dragend', () =>{
-                img.setAttribute('draggable', false);
-                img.style.border = '';
-                
-                img.setAttribute('draggable', true);
-            })
-            document.addEventListener("dragstart", (e) => {
-                dragged = e.img;
-              });
-        })
-    }
+        
+    };
 
 
     aboutButton.addEventListener('click', () => {
@@ -140,7 +165,26 @@ function loadStart(){
         clear();
         let backBtnInAbout = document.createElement('button');
         backBtnInAbout.className = 'aboutBack';
-        backBtnInAbout.innerText = 'Back';
+        backBtnInAbout.style.backgroundColor = 'transparent';
+        backBtnInAbout.style.border = 'none';
+        backBtnInAbout.style.cursor = 'pointer';
+        backBtnInAbout.addEventListener('mouseover', mouseoverBackButton);
+        backBtnInAbout.addEventListener('mouseout', mouseoutBackButton);
+        function mouseoverBackButton(){
+            img.setAttribute('width', '300');
+            img.setAttribute('height', '150');
+        };
+        function mouseoutBackButton(){
+            img.setAttribute('width', '200');
+            img.setAttribute('height', '100');
+        }
+        
+        let url = ('backarrow.png');
+        let img = document.createElement('img');
+        img.src = url;
+        img.setAttribute('width', '200');
+        img.setAttribute('height', '100');
+        backBtnInAbout.appendChild(img);
         menuBtnsDiv.appendChild(backBtnInAbout);
 
         backBtnInAbout.addEventListener('click', () =>{
@@ -155,6 +199,12 @@ function loadStart(){
         let imgAbout = document.createElement('div');
         imgAbout.className = 'imgInAbout';
         aboutDiv.appendChild(imgAbout)
+        let imgInDivAbout = document.createElement('img');
+        imgInDivAbout.src = 'софтуни.png';
+        imgInDivAbout.setAttribute('width', '200');
+        imgInDivAbout.setAttribute('height', '300');
+        imgAbout.appendChild(imgInDivAbout);
+
 
         let imgAboutParagraph = document.createElement('p');
         aboutDiv.appendChild(imgAboutParagraph);
@@ -173,7 +223,26 @@ function loadStart(){
             clear();
             let backBtnInAbout = document.createElement('button');
             backBtnInAbout.className = 'aboutBack';
-            backBtnInAbout.innerText = 'Back';
+            backBtnInAbout.style.backgroundColor = 'transparent';
+            backBtnInAbout.style.border = 'none';
+            backBtnInAbout.style.cursor = 'pointer';
+            backBtnInAbout.addEventListener('mouseover', mouseoverBackButton);
+            backBtnInAbout.addEventListener('mouseout', mouseoutBackButton);
+            function mouseoverBackButton(){
+                img.setAttribute('width', '300');
+                img.setAttribute('height', '150');
+            };
+            function mouseoutBackButton(){
+                img.setAttribute('width', '200');
+                img.setAttribute('height', '100');
+            }
+            
+            let url = ('backarrow.png');
+            let img = document.createElement('img');
+            img.src = url;
+            img.setAttribute('width', '200');
+            img.setAttribute('height', '100');
+            backBtnInAbout.appendChild(img);
             menuBtnsDiv.appendChild(backBtnInAbout);
     
             backBtnInAbout.addEventListener('click', () =>{
