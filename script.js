@@ -124,9 +124,62 @@ function loadStart(){
 
             let img = document.createElement('img');
             img.className = 'draggable';
-            img.src = 'animeGirl.png';
-            img.setAttribute('width', '500');
+            img.src = 'girl2.png';
+            img.setAttribute('width', '300');
+            img.setAttribute('height', '500');
+            canva.appendChild(img);
+
+            const position = { x: 0, y: 0 }
+
+            interact('.draggable').draggable({
+                listeners: {
+                    start (event) {
+                        // console.log(event.type, event.target);
+                    },
+                    move (event) {
+                        position.x += event.dx
+                        position.y += event.dy
+
+                        event.target.style.transform =
+                            `translate(${position.x}px, ${position.y}px)`;
+                    },
+                }
+            })
+        });
+        btn3.addEventListener('click', () =>{
+
+            let img = document.createElement('img');
+            img.className = 'draggable';
+            img.src = 'bubble.png';
+            img.setAttribute('width', '400');
             img.setAttribute('height', '300');
+            canva.appendChild(img);
+
+            const position = { x: 0, y: 0 }
+
+            interact('.draggable').draggable({
+                listeners: {
+                    start (event) {
+                        // console.log(event.type, event.target);
+                    },
+                    move (event) {
+                        position.x += event.dx
+                        position.y += event.dy
+
+                        event.target.style.transform =
+                            `translate(${position.x}px, ${position.y}px)`;
+                    },
+                }
+            })
+        });
+        btn4.innerText = 'TestBoy';
+        btn4.addEventListener('click', () =>{
+
+            let img = document.createElement('img');
+            img.className = 'draggable';
+            img.src = 'boy.png';
+            img.setAttribute('width', '300');
+            img.setAttribute('height', '500');
             canva.appendChild(img);
 
             const position = { x: 0, y: 0 }

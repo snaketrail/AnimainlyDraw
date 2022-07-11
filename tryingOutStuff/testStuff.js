@@ -1,0 +1,314 @@
+window.addEventListener('load', loadStart);
+
+const menuBtnsDiv = document.getElementsByTagName('div')[0];
+function clear(){
+    while (menuBtnsDiv.firstChild) {
+        menuBtnsDiv.removeChild(menuBtnsDiv.firstChild);
+    };
+};
+
+function loadStart(){
+    clear();
+    let drawButton = document.createElement('button');
+    drawButton.className = 'buttonClass';
+    drawButton.innerText = 'Draw'
+    menuBtnsDiv.appendChild(drawButton);
+    drawButton.addEventListener('click', loadDraw);
+
+    let aboutButton = document.createElement('button');
+    aboutButton.classList = 'buttonClass';
+    aboutButton.innerText = 'About';
+    menuBtnsDiv.appendChild(aboutButton)
+    aboutButton.addEventListener('click', loadAbout);
+
+    let visitButton = document.createElement('button');
+    visitButton.classList = 'buttonClass';
+    visitButton.innerText = 'Visit Website(not working)';
+    visitButton.setAttribute('disabled', true)
+    menuBtnsDiv.appendChild(visitButton);
+
+    let exitButton = document.createElement('button');
+    exitButton.classList = 'buttonClass';
+    exitButton.innerText = 'Exit';
+    menuBtnsDiv.appendChild(exitButton);
+
+    let disclaimer = document.createElement('h1');
+    disclaimer.textContent = 'DISCLAIMER: Only desktop version available!';
+    menuBtnsDiv.appendChild(disclaimer);
+
+    exitButton.addEventListener('click', () =>{
+        location.href = 'https://www.google.com/';
+    });
+};
+function loadDraw(){
+    clear();
+
+    let canva = document.createElement('div');
+    let canvaStyle = {
+        background: 'white',
+        'background-image': 'none',
+        position: 'absolute',
+        'margin-left': '-6px',
+        border: 'solid black 3px',
+        height: '700px',
+        width: '1200px',
+        top: '-130px',
+        left: '-380px',
+
+    };
+    Object.assign(canva.style, canvaStyle );
+    menuBtnsDiv.appendChild(canva);
+
+    let divForButtons = document.createElement('div');
+    divForButtons.className = 'divForBtns';
+    menuBtnsDiv.appendChild(divForButtons);
+
+    let btn1 = document.createElement('button');
+    btn1.innerText = 'Backgrounds';
+    let btn2 = document.createElement('button');
+    btn2.innerText = 'Characters';
+    let btn3 = document.createElement('button');
+    btn3.innerText = 'Speech Bubbles';
+    let btn4 = document.createElement('button');
+    btn4.innerText = 'Subscribe';
+    let btn5 = document.createElement('button');
+    btn5.innerText = 'Shop';
+    let btn6 = document.createElement('button');
+    btn6.innerText = 'Main Menu';
+    btn6.addEventListener('click', loadStart);
+    let btn7 = document.createElement('button');
+    btn7.innerText = 'Clear Canvas';
+    btn7.addEventListener('click', clearCnavas);
+    function clearCnavas(){
+        while(canva.firstChild){
+            canva.removeChild(canva.firstChild);
+        };
+    };
+    let btn8 = document.createElement('button');
+    btn8.innerText = 'Undo';
+    btn8.addEventListener('click', undoIt);
+    function undoIt(){
+        canva.removeChild(canva.lastChild);
+    }
+    let divForDropBG = document.createElement('div');
+    let divForBGDropDown = document.createElement('div');
+    let divBGBtn1 = document.createElement('button');
+    divBGBtn1.innerText = 'Apartment';
+    divForBGDropDown.className = 'noShow';
+    let divForDropChar = document.createElement('div');
+    let divForCharDropDown = document.createElement('div');
+    divForCharDropDown.className = 'noShow';
+
+    let divCharBtn1 = document.createElement('button');
+    let divCharBtn2 = document.createElement('button');
+    let divCharBtn3 = document.createElement('button');
+    divCharBtn1.innerText = 'Girls';
+    divCharBtn2.innerText = 'Boys';
+    divCharBtn3.innerText = 'Monsters';
+
+    divForButtons.appendChild(divForDropBG);
+    divForDropBG.appendChild(btn1);
+    divForDropBG.appendChild(divForBGDropDown);
+    divForBGDropDown.appendChild(divBGBtn1);
+    divBGBtn1.className = 'buttonInDrop';
+    divBGBtn1.addEventListener('click', addBackground);
+    function addBackground(){
+        clearCnavas(); //this needs to remove child if it's class name is background!!!
+        let url = 'background1.png';
+        let img = document.createElement('img');
+        img.src = url;
+        img.setAttribute('width', '1200');
+        img.setAttribute('height', '700');
+        canva.appendChild(img);
+    };
+
+    divForButtons.appendChild(divForDropChar);
+    divForDropChar.appendChild(btn2);
+    divForDropChar.appendChild(divForCharDropDown);
+    divForCharDropDown.appendChild(divCharBtn1);
+    divCharBtn1.className = 'buttonInDrop';
+    divCharBtn2.className = 'buttonInDrop';
+    divCharBtn3.className = 'buttonInDrop';
+    divForCharDropDown.appendChild(divCharBtn2);
+    divForCharDropDown.appendChild(divCharBtn3);
+
+    // divForButtons.appendChild(btn1);
+    // divForButtons.appendChild(btn2);
+    // divForButtons.appendChild(btn3);
+    divForButtons.appendChild(btn4);
+    divForButtons.appendChild(btn5);
+    divForButtons.appendChild(btn6);
+    divForButtons.appendChild(btn7);
+    divForButtons.appendChild(btn8);
+
+    btn1.className = 'btnInDrawDiv';
+    btn2.className = 'btnInDrawDiv';
+    btn3.className = 'btnInDrawDiv';
+    btn4.className = 'btnInDrawDiv';
+    btn5.className = 'btnInDrawDiv';
+    btn6.className = 'btnInDrawDivMenu';
+    btn7.className = 'btnInDrawDiv';
+    btn8.className = 'btnInDrawDiv';
+
+
+    // divForDropBG.addEventListener('click', dropItDown);
+    // divForBGDropDown.addEventListener('mousein', dropItDownHide);
+    // function dropItDownHide(){
+    //     divForBGDropDown.className = 'noShow';
+    // }
+    // function dropItDown(){
+    //     divForBGDropDown.className = 'dropD';
+    // };
+
+    btn2.addEventListener('click', () =>{
+
+        let img = document.createElement('img');
+        img.className = 'draggable';
+        img.src = 'girl2.png';
+        img.setAttribute('width', '500');
+        img.setAttribute('height', '300');
+        canva.appendChild(img);
+
+        const position = { x: 0, y: 0 }
+
+        interact('.draggable').draggable({
+            listeners: {
+                start (event) {
+                    // console.log(event.type, event.target);
+                },
+                move (event) {
+                    position.x += event.dx
+                    position.y += event.dy
+
+                    event.target.style.transform =
+                        `translate(${position.x}px, ${position.y}px)`;
+                },
+            }
+        })
+    });
+
+    btn6.addEventListener('click', () =>{
+        clear();
+        loadStart();
+    });
+
+    
+};
+function loadAbout(){
+    clear();
+    let backBtnInAbout = document.createElement('button');
+    backBtnInAbout.className = 'aboutBack';
+    backBtnInAbout.style.backgroundColor = 'transparent';
+    backBtnInAbout.style.border = 'none';
+    backBtnInAbout.style.cursor = 'pointer';
+    backBtnInAbout.addEventListener('mouseover', mouseoverBackButton);
+    backBtnInAbout.addEventListener('mouseout', mouseoutBackButton);
+    function mouseoverBackButton(){
+        img.setAttribute('width', '300');
+        img.setAttribute('height', '150');
+    };
+    function mouseoutBackButton(){
+        img.setAttribute('width', '200');
+        img.setAttribute('height', '100');
+    }
+    
+    let url = ('backarrow.png');
+    let img = document.createElement('img');
+    img.src = url;
+    img.setAttribute('width', '200');
+    img.setAttribute('height', '100');
+    backBtnInAbout.appendChild(img);
+    menuBtnsDiv.appendChild(backBtnInAbout);
+
+    backBtnInAbout.addEventListener('click', () =>{
+        clear();
+        loadStart();
+    })
+
+    let aboutDiv = document.createElement('div');
+    aboutDiv.className = 'aboutPage';
+    menuBtnsDiv.appendChild(aboutDiv);
+
+    let imgAbout = document.createElement('div');
+    imgAbout.className = 'imgInAbout';
+    aboutDiv.appendChild(imgAbout)
+    let imgInDivAbout = document.createElement('img');
+    imgInDivAbout.src = 'софтуни.png';
+    imgInDivAbout.setAttribute('width', '200');
+    imgInDivAbout.setAttribute('height', '300');
+    imgAbout.appendChild(imgInDivAbout);
+
+
+    let imgAboutParagraph = document.createElement('p');
+    aboutDiv.appendChild(imgAboutParagraph);
+
+    let imgAboutH2 = document.createElement('h2');
+    imgAboutH2.textContent = 'Stefan Dimitrov';
+    imgAboutH2.style.color = 'black';
+    aboutDiv.appendChild(imgAboutH2);
+
+    let buttonNext = document.createElement('button');
+    buttonNext.innerText = 'Next';
+    buttonNext.className = 'buttonNextAbout';
+    aboutDiv.appendChild(buttonNext);
+
+    buttonNext.addEventListener('click', () =>{
+        clear();
+        let backBtnInAbout = document.createElement('button');
+        backBtnInAbout.className = 'aboutBack';
+        backBtnInAbout.style.backgroundColor = 'transparent';
+        backBtnInAbout.style.border = 'none';
+        backBtnInAbout.style.cursor = 'pointer';
+        backBtnInAbout.addEventListener('mouseover', mouseoverBackButton);
+        backBtnInAbout.addEventListener('mouseout', mouseoutBackButton);
+        function mouseoverBackButton(){
+            img.setAttribute('width', '300');
+            img.setAttribute('height', '150');
+        };
+        function mouseoutBackButton(){
+            img.setAttribute('width', '200');
+            img.setAttribute('height', '100');
+        }
+        
+        let url = ('backarrow.png');
+        let img = document.createElement('img');
+        img.src = url;
+        img.setAttribute('width', '200');
+        img.setAttribute('height', '100');
+        backBtnInAbout.appendChild(img);
+        menuBtnsDiv.appendChild(backBtnInAbout);
+
+        backBtnInAbout.addEventListener('click', () =>{
+            clear();
+            loadStart();
+        })
+        let aboutDiv = document.createElement('div');
+        aboutDiv.className = 'aboutPage';
+        menuBtnsDiv.appendChild(aboutDiv);
+
+        let imgAbout = document.createElement('div');
+        imgAbout.className = 'imgInAbout';
+        aboutDiv.appendChild(imgAbout)
+
+        let imgAboutParagraph = document.createElement('p');
+        aboutDiv.appendChild(imgAboutParagraph);
+
+        let imgAboutH2 = document.createElement('h2');
+        imgAboutH2.textContent = 'Simeon Dimitrov';
+        imgAboutH2.style.color = 'black';
+        aboutDiv.appendChild(imgAboutH2);
+         
+        let buttonNext = document.createElement('button');
+        buttonNext.innerText = 'Next';
+        buttonNext.className = 'buttonNextAbout';
+        aboutDiv.appendChild(buttonNext);
+
+        let previousButton = document.createElement('button');
+        previousButton.innerText = 'Previous';
+        previousButton.className = 'buttonPreviousAbout';
+        aboutDiv.appendChild(previousButton);
+
+        previousButton.addEventListener('click', loadAbout);
+    });
+};
+
