@@ -335,69 +335,69 @@ function loadStart(){
         imgAboutH2.style.color = 'black';
         aboutDiv.appendChild(imgAboutH2);
 
-        let buttonNext = document.createElement('button');
-        buttonNext.innerText = 'Next';
-        buttonNext.className = 'buttonNextAbout';
-        aboutDiv.appendChild(buttonNext);
+        // let buttonNext = document.createElement('button');
+        // buttonNext.innerText = 'Next';
+        // buttonNext.className = 'buttonNextAbout';
+        // aboutDiv.appendChild(buttonNext);
 
-        buttonNext.addEventListener('click', () =>{
-            clear();
-            let backBtnInAbout = document.createElement('button');
-            backBtnInAbout.className = 'aboutBack';
-            backBtnInAbout.style.backgroundColor = 'transparent';
-            backBtnInAbout.style.border = 'none';
-            backBtnInAbout.style.cursor = 'pointer';
-            backBtnInAbout.addEventListener('mouseover', mouseoverBackButton);
-            backBtnInAbout.addEventListener('mouseout', mouseoutBackButton);
-            function mouseoverBackButton(){
-                img.setAttribute('width', '300');
-                img.setAttribute('height', '150');
-            };
-            function mouseoutBackButton(){
-                img.setAttribute('width', '200');
-                img.setAttribute('height', '100');
-            }
+        // buttonNext.addEventListener('click', () =>{
+        //     clear();
+        //     let backBtnInAbout = document.createElement('button');
+        //     backBtnInAbout.className = 'aboutBack';
+        //     backBtnInAbout.style.backgroundColor = 'transparent';
+        //     backBtnInAbout.style.border = 'none';
+        //     backBtnInAbout.style.cursor = 'pointer';
+        //     backBtnInAbout.addEventListener('mouseover', mouseoverBackButton);
+        //     backBtnInAbout.addEventListener('mouseout', mouseoutBackButton);
+        //     function mouseoverBackButton(){
+        //         img.setAttribute('width', '300');
+        //         img.setAttribute('height', '150');
+        //     };
+        //     function mouseoutBackButton(){
+        //         img.setAttribute('width', '200');
+        //         img.setAttribute('height', '100');
+        //     }
             
-            let url = ('backarrow.png');
-            let img = document.createElement('img');
-            img.src = url;
-            img.setAttribute('width', '200');
-            img.setAttribute('height', '100');
-            backBtnInAbout.appendChild(img);
-            menuBtnsDiv.appendChild(backBtnInAbout);
+        //     let url = ('backarrow.png');
+        //     let img = document.createElement('img');
+        //     img.src = url;
+        //     img.setAttribute('width', '200');
+        //     img.setAttribute('height', '100');
+        //     backBtnInAbout.appendChild(img);
+        //     menuBtnsDiv.appendChild(backBtnInAbout);
     
-            backBtnInAbout.addEventListener('click', () =>{
-                clear();
-                loadStart();
-            })
-            let aboutDiv = document.createElement('div');
-            aboutDiv.className = 'aboutPage';
-            menuBtnsDiv.appendChild(aboutDiv);
+        //     backBtnInAbout.addEventListener('click', () =>{
+        //         clear();
+        //         loadStart();
+        //     })
+        //     let aboutDiv = document.createElement('div');
+        //     aboutDiv.className = 'aboutPage';
+        //     menuBtnsDiv.appendChild(aboutDiv);
     
-            let imgAbout = document.createElement('div');
-            imgAbout.className = 'imgInAbout';
-            aboutDiv.appendChild(imgAbout)
+        //     let imgAbout = document.createElement('div');
+        //     imgAbout.className = 'imgInAbout';
+        //     aboutDiv.appendChild(imgAbout)
     
-            let imgAboutParagraph = document.createElement('p');
-            aboutDiv.appendChild(imgAboutParagraph);
+        //     let imgAboutParagraph = document.createElement('p');
+        //     aboutDiv.appendChild(imgAboutParagraph);
     
-            let imgAboutH2 = document.createElement('h2');
-            imgAboutH2.textContent = 'Simeon Dimitrov';
-            imgAboutH2.style.color = 'black';
-            aboutDiv.appendChild(imgAboutH2);
+        //     let imgAboutH2 = document.createElement('h2');
+        //     imgAboutH2.textContent = 'Simeon Dimitrov';
+        //     imgAboutH2.style.color = 'black';
+        //     aboutDiv.appendChild(imgAboutH2);
              
-            let buttonNext = document.createElement('button');
-            buttonNext.innerText = 'Next';
-            buttonNext.className = 'buttonNextAbout';
-            aboutDiv.appendChild(buttonNext);
+        //     let buttonNext = document.createElement('button');
+        //     buttonNext.innerText = 'Next';
+        //     buttonNext.className = 'buttonNextAbout';
+        //     aboutDiv.appendChild(buttonNext);
 
-            let previousButton = document.createElement('button');
-            previousButton.innerText = 'Previous';
-            previousButton.className = 'buttonPreviousAbout';
-            aboutDiv.appendChild(previousButton);
+        //     let previousButton = document.createElement('button');
+        //     previousButton.innerText = 'Previous';
+        //     previousButton.className = 'buttonPreviousAbout';
+        //     aboutDiv.appendChild(previousButton);
 
-            previousButton.addEventListener('click', loadAbout);
-        });
+        //     previousButton.addEventListener('click', loadAbout);
+        // });
     };
 };
 
