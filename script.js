@@ -91,8 +91,44 @@ function loadStart(){
             canva.removeChild(canva.lastChild);
         }
         
-        divForButtons.appendChild(btn1);
-        divForButtons.appendChild(btn2);
+
+
+        let dropDiv = document.createElement('div');
+        dropDiv.className = 'dropDd';
+        let dropDcontent = document.createElement('div');
+        let btninDrop1 = document.createElement('button');
+        let btninDrop2 = document.createElement('button');
+        btninDrop1.innerText = 'Boy';
+        btninDrop2.innerText = 'Girl';
+        dropDiv.appendChild(btn1);
+        dropDiv.appendChild(dropDcontent);
+        btninDrop1.className = 'links';
+        btninDrop2.className = 'links';
+
+
+        dropDiv.className = 'dropDd';
+        let dropDiv1 = document.createElement('div');
+        let dropDcontent1 = document.createElement('div');
+        let btninDrop3 = document.createElement('button');
+        dropDcontent1.appendChild(btninDrop1);
+        dropDcontent1.appendChild(btninDrop2);
+        
+        dropDcontent.appendChild(btninDrop3);
+        dropDiv1.appendChild(btn2);
+        dropDiv1.appendChild(dropDcontent1);
+
+        btninDrop3.className = 'links';
+        btninDrop3.innerText = 'Apartment';
+        dropDiv1.className = 'dropDd1';
+        dropDcontent.className = 'noShow';
+        dropDcontent.id = 'dropItDown';
+        dropDcontent1.id = 'dropItDown1';
+        dropDcontent1.className = 'noShow';
+
+
+
+        divForButtons.appendChild(dropDiv);
+        divForButtons.appendChild(dropDiv1);
         divForButtons.appendChild(btn3);
         divForButtons.appendChild(btn4);
         divForButtons.appendChild(btn5);
@@ -109,7 +145,39 @@ function loadStart(){
         btn7.className = 'btnInDrawDiv';
         btn8.className = 'btnInDrawDiv';
 
-        btn1.addEventListener('click', addBackground);
+        btn1.addEventListener('click', dropFunct);
+        btn2.addEventListener('click', dropFunct2);
+
+        function dropFunct() {
+            document.getElementById("dropItDown").classList.toggle("show");
+        }
+        window.onclick = function(event) {
+            if (!event.target.matches('.btnInDrawDivMenu')) {
+              let dropdowns = document.getElementsByClassName("dropCont");
+              for (let i = 0; i < dropdowns.length; i++) {
+                let openDropdown = dropdowns[i];
+                if (openDropdown.classList.contains('show')) {
+                  openDropdown.classList.remove('show');
+                };
+              };
+            };
+          };
+        function dropFunct2() {
+            document.getElementById("dropItDown1").classList.toggle("show");
+        }
+        window.onclick = function(event) {
+                if (!event.target.matches('.btnInDrawDiv')) {
+                    let dropdowns = document.getElementsByClassName("dropCont1");
+                    for (let i = 0; i < dropdowns.length; i++) {
+                        let openDropdown = dropdowns[i];
+                        if (openDropdown.classList.contains('show')) {
+                            openDropdown.classList.remove('show');
+                        };
+                    };
+                };
+        };
+
+        btninDrop3.addEventListener('click', addBackground);
         function addBackground(){
             clearCnavas(); //this needs to remove child if it's class name is background!!!
             let url = 'background1.png';
@@ -120,7 +188,7 @@ function loadStart(){
             canva.appendChild(img);
         };
 
-        btn2.addEventListener('click', () =>{
+        btninDrop2.addEventListener('click', () =>{
 
             let img = document.createElement('img');
             img.className = 'draggable';
@@ -146,6 +214,7 @@ function loadStart(){
                 }
             })
         });
+
         btn3.addEventListener('click', () =>{
 
             let img = document.createElement('img');
@@ -172,8 +241,7 @@ function loadStart(){
                 }
             })
         });
-        btn4.innerText = 'TestBoy';
-        btn4.addEventListener('click', () =>{
+        btninDrop1.addEventListener('click', () =>{
 
             let img = document.createElement('img');
             img.className = 'draggable';

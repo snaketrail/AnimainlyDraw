@@ -133,3 +133,54 @@ and start of drawingPage */
     top: 200px;
     left: 350px;
 }
+.dropDd{
+    width: 250px;
+    height: 50px;
+    margin-top: 10px;
+    border-radius: 3%;
+    position: relative;
+    display: inline-block;
+}
+.dropDd1{
+    margin-bottom: 15px;
+    width: 250px;
+    height: 50px;
+    margin-top: 10px;
+    border-radius: 3%;
+    position: relative;
+    display: inline-block;
+}
+.dropCont{
+    margin-left: 25px;
+    height: 300px;
+    width: 200px;
+    background-color: transparent;
+    display: none;
+    position: absolute;
+}
+.dropCont1{
+    margin-left: 25px;
+    height: 300px;
+    width: 200px;
+    background-color: transparent;
+    display: none;
+    position: absolute;
+}
+.links{
+    height: 50px;
+    width: 200px;
+    background-color: pink;
+    font-size: 16px;
+    font-weight: 600;
+    margin-left: 25px;
+}
+.links:hover{
+    background-color: rgb(249, 100, 125);
+}
+.noShow{
+    display: none;
+}
+.show{
+    display: block;
+    z-index: 1;
+}
