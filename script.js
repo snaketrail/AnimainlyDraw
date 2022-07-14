@@ -125,16 +125,48 @@ function loadStart(){
         dropDcontent1.id = 'dropItDown1';
         dropDcontent1.className = 'noShow';
 
+        let dropDiv2 = document.createElement('div');
+        dropDiv2.className = 'dropDd2';
+        let dropCont2 = document.createElement('div');
+        dropCont2.className = 'noShow';
+        dropCont2.id = 'dropItDown2';
+        dropDiv2.appendChild(btn3);
+        dropDiv2.appendChild(dropCont2);
+        let dropBtnBubble1 = document.createElement('button');
+        let dropBtnBubble2 = document.createElement('button');
+        dropCont2.appendChild(dropBtnBubble1);
+        dropCont2.appendChild(dropBtnBubble2);
+        dropBtnBubble1.className = 'links';
+        dropBtnBubble2.className = 'links';
+        dropBtnBubble1.innerText = 'Balloon 1';
+        dropBtnBubble2.innerText = 'Balloon 2';
 
+        let dropDiv3 = document.createElement('div');
+        dropDiv3.className = 'dropDd3';
+        dropDiv3.appendChild(btn4);
+        let dropDiv4 = document.createElement('div');
+        dropDiv3.className = 'dropDd4';
+        dropDiv3.appendChild(btn5);
+        let dropDiv5 = document.createElement('div');
+        dropDiv3.className = 'dropDd5';
+        dropDiv3.appendChild(btn8);
+        let dropDiv6 = document.createElement('div');
+        dropDiv3.className = 'dropDd6';
+        dropDiv3.appendChild(btn6);
+        let dropDiv7 = document.createElement('div');
+        dropDiv3.className = 'dropDd7';
+        dropDiv3.appendChild(btn7);
+        
 
         divForButtons.appendChild(dropDiv);
         divForButtons.appendChild(dropDiv1);
-        divForButtons.appendChild(btn3);
-        divForButtons.appendChild(btn4);
-        divForButtons.appendChild(btn5);
+        divForButtons.appendChild(dropDiv2);
+        divForButtons.appendChild(dropDiv3);
+        divForButtons.appendChild(dropDiv4);
+        divForButtons.appendChild(dropDiv5);
+        divForButtons.appendChild(dropDiv6);
+        divForButtons.appendChild(dropDiv7);
         divForButtons.appendChild(btn6);
-        divForButtons.appendChild(btn7);
-        divForButtons.appendChild(btn8);
 
         btn1.className = 'btnInDrawDiv';
         btn2.className = 'btnInDrawDiv';
@@ -147,6 +179,7 @@ function loadStart(){
 
         btn1.addEventListener('click', dropFunct);
         btn2.addEventListener('click', dropFunct2);
+        btn3.addEventListener('click', dropFunct3);
 
         function dropFunct() {
             document.getElementById("dropItDown").classList.toggle("show");
@@ -175,6 +208,20 @@ function loadStart(){
                         };
                     };
                 };
+        };
+        function dropFunct3() {
+          document.getElementById("dropItDown2").classList.toggle("show");
+      }
+      window.onclick = function(event) {
+          if (!event.target.matches('.btnInDrawDivMenu')) {
+            let dropdowns = document.getElementsByClassName("dropCont2");
+            for (let i = 0; i < dropdowns.length; i++) {
+              let openDropdown = dropdowns[i];
+              if (openDropdown.classList.contains('show')) {
+                openDropdown.classList.remove('show');
+              };
+            };
+          };
         };
 
         btninDrop3.addEventListener('click', addBackground);
@@ -214,7 +261,7 @@ function loadStart(){
             })
         });
 
-        btn3.addEventListener('click', () =>{
+        dropBtnBubble1.addEventListener('click', () =>{
 
             let img = document.createElement('img');
             img.className = 'draggable';
@@ -239,6 +286,31 @@ function loadStart(){
                 }
             })
         });
+        dropBtnBubble2.addEventListener('click', () =>{
+
+          let img = document.createElement('img');
+          img.className = 'draggable';
+          img.src = 'buble2.png';
+          img.setAttribute('width', '400');
+          img.setAttribute('height', '300');
+          canva.appendChild(img);
+
+          const position = { x: 0, y: 0 }
+
+          interact('.draggable').draggable({
+              listeners: {
+                  start (event) {
+                  },
+                  move (event) {
+                      position.x += event.dx
+                      position.y += event.dy
+
+                      event.target.style.transform =
+                          `translate(${position.x}px, ${position.y}px)`;
+                  },
+              }
+          })
+      });
         btninDrop1.addEventListener('click', () =>{
 
             let img = document.createElement('img');
@@ -321,7 +393,7 @@ function loadStart(){
         imgInDivAbout.src = 'софтуни.png';
         imgInDivAbout.setAttribute('width', '200');
         imgInDivAbout.setAttribute('height', '300');
-        imgAbout.appendChild(imgInDivAbout);
+        // imgAbout.appendChild(imgInDivAbout);
 
 
         let imgAboutParagraph = document.createElement('p');

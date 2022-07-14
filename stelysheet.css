@@ -95,6 +95,7 @@ and start of drawingPage */
     width: 250px;
     height: 50px;
     margin-top: 10px;
+    margin-bottom: 10px;
     background-color: pink;
     color: black;
     font-size: 20px;
@@ -120,7 +121,6 @@ and start of drawingPage */
     -webkit-box-shadow: 5px 9px 15px 5px rgba(0,0,0,0.67); 
     box-shadow: 5px 9px 15px 5px rgba(0,0,0,0.67);
     border-radius: 3%;
-    
 }
 .btnInDrawDivMenu:hover{
     background-color: rgb(254, 110, 134);
@@ -134,6 +134,7 @@ and start of drawingPage */
     left: 350px;
 }
 .dropDd{
+    margin-bottom: 10px;
     width: 250px;
     height: 50px;
     margin-top: 10px;
@@ -142,8 +143,8 @@ and start of drawingPage */
     display: inline-block;
 }
 .dropDd1{
-    margin-bottom: 15px;
     width: 250px;
+    margin-bottom: 10px;
     height: 50px;
     margin-top: 10px;
     border-radius: 3%;
@@ -165,6 +166,68 @@ and start of drawingPage */
     background-color: transparent;
     display: none;
     position: absolute;
+}
+.dropDd2{
+    margin-bottom: 10px;
+    margin-top: 10px;
+    width: 250px;
+    height: 50px;
+    border-radius: 3%;
+    position: relative;
+    display: inline-block;
+}
+.dropCont2{
+    margin-left: 25px;
+    height: 300px;
+    width: 200px;
+    background-color: transparent;
+    display: none;
+    position: absolute;
+}
+.dropDd3{
+    margin-top: 10px;
+    margin-bottom: 10px;
+    width: 250px;
+    height: 50px;
+    border-radius: 3%;
+    position: relative;
+    display: inline-block;
+}
+.dropDd4{
+    margin-top: 10px;
+    margin-bottom: 10px;
+    width: 250px;
+    height: 50px;
+    border-radius: 3%;
+    position: relative;
+    display: inline-block;
+}
+.dropDd5{
+    margin-top: 10px;
+    margin-bottom: 10px;
+    width: 250px;
+    height: 50px;
+    border-radius: 3%;
+    position: relative;
+    display: inline-block;
+}
+.dropDd6{
+    margin-top: 10px;
+    margin-bottom: 10px;
+    width: 250px;
+    height: 50px;
+    border-radius: 3%;
+    position: relative;
+    display: inline-block;
+}
+.dropDd7{
+    margin-top: 10px;
+    margin-bottom: 10px;
+    width: 250px;
+    height: 50px;
+    border-radius: 3%;
+    position: relative;
+    display: inline-block;
 }
 .links{
     height: 50px;

@@ -393,7 +393,7 @@ function loadStart(){
         imgInDivAbout.src = 'софтуни.png';
         imgInDivAbout.setAttribute('width', '200');
         imgInDivAbout.setAttribute('height', '300');
-        imgAbout.appendChild(imgInDivAbout);
+        // imgAbout.appendChild(imgInDivAbout);
 
 
         let imgAboutParagraph = document.createElement('p');
