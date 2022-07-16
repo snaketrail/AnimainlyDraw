@@ -243,6 +243,12 @@ function loadStart(){
             img.setAttribute('width', '300');
             img.setAttribute('height', '500');
             canva.appendChild(img);
+            img.addEventListener('mouseover', () =>{
+                img.style.border = 'black solid 2px';
+            });
+            img.addEventListener('mouseout', () =>{
+                img.style.border = '';
+            });
 
             const position = { x: 0, y: 0 }
 
@@ -258,6 +264,26 @@ function loadStart(){
                             `translate(${position.x}px, ${position.y}px)`;
                     },
                 }
+            })
+            interact('.draggable')
+            .resizable({
+              edges: { top: true, left: true, bottom: true, right: true },
+              listeners: {
+                move: function (event) {
+                  let { x, y } = event.target.dataset
+          
+                  x = (parseFloat(x) || 0) + event.deltaRect.left
+                  y = (parseFloat(y) || 0) + event.deltaRect.top
+          
+                  Object.assign(event.target.style, {
+                    width: `${event.rect.width}px`,
+                    height: `${event.rect.height}px`,
+                    transform: `translate(${x}px, ${y}px)`
+                  })
+          
+                  Object.assign(event.target.dataset, { x, y })
+                }
+              }
             })
         });
 
@@ -269,6 +295,12 @@ function loadStart(){
             img.setAttribute('width', '400');
             img.setAttribute('height', '300');
             canva.appendChild(img);
+            img.addEventListener('mouseover', () =>{
+                img.style.border = 'black solid 2px';
+            });
+            img.addEventListener('mouseout', () =>{
+                img.style.border = '';
+            });
 
             const position = { x: 0, y: 0 }
 
@@ -285,6 +317,26 @@ function loadStart(){
                     },
                 }
             })
+            interact('.draggable')
+            .resizable({
+              edges: { top: true, left: true, bottom: true, right: true },
+              listeners: {
+                move: function (event) {
+                  let { x, y } = event.target.dataset
+          
+                  x = (parseFloat(x) || 0) + event.deltaRect.left
+                  y = (parseFloat(y) || 0) + event.deltaRect.top
+          
+                  Object.assign(event.target.style, {
+                    width: `${event.rect.width}px`,
+                    height: `${event.rect.height}px`,
+                    transform: `translate(${x}px, ${y}px)`
+                  })
+          
+                  Object.assign(event.target.dataset, { x, y })
+                }
+              }
+            })
         });
         dropBtnBubble2.addEventListener('click', () =>{
 
@@ -294,6 +346,12 @@ function loadStart(){
           img.setAttribute('width', '400');
           img.setAttribute('height', '300');
           canva.appendChild(img);
+          img.addEventListener('mouseover', () =>{
+            img.style.border = 'black solid 2px';
+            });
+            img.addEventListener('mouseout', () =>{
+                img.style.border = '';
+            });
 
           const position = { x: 0, y: 0 }
 
@@ -310,6 +368,26 @@ function loadStart(){
                   },
               }
           })
+          interact('.draggable')
+          .resizable({
+            edges: { top: true, left: true, bottom: true, right: true },
+            listeners: {
+              move: function (event) {
+                let { x, y } = event.target.dataset
+        
+                x = (parseFloat(x) || 0) + event.deltaRect.left
+                y = (parseFloat(y) || 0) + event.deltaRect.top
+        
+                Object.assign(event.target.style, {
+                  width: `${event.rect.width}px`,
+                  height: `${event.rect.height}px`,
+                  transform: `translate(${x}px, ${y}px)`
+                })
+        
+                Object.assign(event.target.dataset, { x, y })
+              }
+            }
+          })
       });
         btninDrop1.addEventListener('click', () =>{
 
@@ -319,6 +397,12 @@ function loadStart(){
             img.setAttribute('width', '300');
             img.setAttribute('height', '500');
             canva.appendChild(img);
+            img.addEventListener('mouseover', () =>{
+                img.style.border = 'black solid 2px';
+            });
+            img.addEventListener('mouseout', () =>{
+                img.style.border = '';
+            });
 
             const position = { x: 0, y: 0 }
 
@@ -334,6 +418,26 @@ function loadStart(){
                             `translate(${position.x}px, ${position.y}px)`;
                     },
                 }
+            })
+            interact('.draggable')
+            .resizable({
+              edges: { top: true, left: true, bottom: true, right: true },
+              listeners: {
+                move: function (event) {
+                  let { x, y } = event.target.dataset
+          
+                  x = (parseFloat(x) || 0) + event.deltaRect.left
+                  y = (parseFloat(y) || 0) + event.deltaRect.top
+          
+                  Object.assign(event.target.style, {
+                    width: `${event.rect.width}px`,
+                    height: `${event.rect.height}px`,
+                    transform: `translate(${x}px, ${y}px)`
+                  })
+          
+                  Object.assign(event.target.dataset, { x, y })
+                }
+              }
             })
         });
 
@@ -469,5 +573,3 @@ function loadStart(){
         });
     };
 };
-
-
