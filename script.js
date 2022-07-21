@@ -14,16 +14,18 @@ function loadStart(){
     drawButton.innerText = 'Draw'
     menuBtnsDiv.appendChild(drawButton);
 
-    let aboutButton = document.createElement('button');
-    aboutButton.classList = 'buttonClass';
-    aboutButton.innerText = 'About';
-    menuBtnsDiv.appendChild(aboutButton)
+    // let aboutButton = document.createElement('button');
+    // aboutButton.classList = 'buttonClass';
+    // aboutButton.innerText = 'About';
+    // menuBtnsDiv.appendChild(aboutButton)
 
     let visitButton = document.createElement('button');
     visitButton.classList = 'buttonClass';
-    visitButton.innerText = 'Visit Website(not working)';
-    visitButton.setAttribute('disabled', true)
+    visitButton.innerText = 'Visit Website';
     menuBtnsDiv.appendChild(visitButton);
+    visitButton.addEventListener('click', () =>{
+      location.href ='https://snaketrail.github.io/AnimainlyWebsite/';
+    })
 
     let exitButton = document.createElement('button');
     exitButton.classList = 'buttonClass';
@@ -227,7 +229,7 @@ function loadStart(){
         btninDrop3.addEventListener('click', addBackground);
         function addBackground(){
             clearCnavas(); 
-            let url = 'background1.png';
+            let url = 'images/background1.png';
             let img = document.createElement('img');
             img.src = url;
             img.setAttribute('width', '1200');
@@ -239,7 +241,7 @@ function loadStart(){
 
             let img = document.createElement('img');
             img.className = 'draggable';
-            img.src = 'girl2.png';
+            img.src = 'images/girl2.png';
             img.setAttribute('width', '300');
             img.setAttribute('height', '500');
             canva.appendChild(img);
@@ -291,7 +293,7 @@ function loadStart(){
 
             let img = document.createElement('img');
             img.className = 'draggable';
-            img.src = 'bubble.png';
+            img.src = 'images/bubble.png';
             img.setAttribute('width', '400');
             img.setAttribute('height', '300');
             canva.appendChild(img);
@@ -342,7 +344,7 @@ function loadStart(){
 
           let img = document.createElement('img');
           img.className = 'draggable';
-          img.src = 'buble2.png';
+          img.src = 'images/buble2.png';
           img.setAttribute('width', '400');
           img.setAttribute('height', '300');
           canva.appendChild(img);
@@ -393,7 +395,7 @@ function loadStart(){
 
             let img = document.createElement('img');
             img.className = 'draggable';
-            img.src = 'boy.png';
+            img.src = 'images/boy.png';
             img.setAttribute('width', '300');
             img.setAttribute('height', '500');
             canva.appendChild(img);
@@ -450,128 +452,128 @@ function loadStart(){
     };
 
 
-    aboutButton.addEventListener('click', () => {
-        clear();
-        loadAbout();
-    });
+    // aboutButton.addEventListener('click', () => {
+    //     clear();
+    //     loadAbout();
+    // });
     
-    function loadAbout(){
-        clear();
-        let backBtnInAbout = document.createElement('button');
-        backBtnInAbout.className = 'aboutBack';
-        backBtnInAbout.style.backgroundColor = 'transparent';
-        backBtnInAbout.style.border = 'none';
-        backBtnInAbout.style.cursor = 'pointer';
-        backBtnInAbout.addEventListener('mouseover', mouseoverBackButton);
-        backBtnInAbout.addEventListener('mouseout', mouseoutBackButton);
-        function mouseoverBackButton(){
-            img.setAttribute('width', '300');
-            img.setAttribute('height', '150');
-        };
-        function mouseoutBackButton(){
-            img.setAttribute('width', '200');
-            img.setAttribute('height', '100');
-        }
+    // function loadAbout(){
+    //     clear();
+    //     let backBtnInAbout = document.createElement('button');
+    //     backBtnInAbout.className = 'aboutBack';
+    //     backBtnInAbout.style.backgroundColor = 'transparent';
+    //     backBtnInAbout.style.border = 'none';
+    //     backBtnInAbout.style.cursor = 'pointer';
+    //     backBtnInAbout.addEventListener('mouseover', mouseoverBackButton);
+    //     backBtnInAbout.addEventListener('mouseout', mouseoutBackButton);
+    //     function mouseoverBackButton(){
+    //         img.setAttribute('width', '300');
+    //         img.setAttribute('height', '150');
+    //     };
+    //     function mouseoutBackButton(){
+    //         img.setAttribute('width', '200');
+    //         img.setAttribute('height', '100');
+    //     }
         
-        let url = ('backarrow.png');
-        let img = document.createElement('img');
-        img.src = url;
-        img.setAttribute('width', '200');
-        img.setAttribute('height', '100');
-        backBtnInAbout.appendChild(img);
-        menuBtnsDiv.appendChild(backBtnInAbout);
+    //     let url = ('images/backarrow.png');
+    //     let img = document.createElement('img');
+    //     img.src = url;
+    //     img.setAttribute('width', '200');
+    //     img.setAttribute('height', '100');
+    //     backBtnInAbout.appendChild(img);
+    //     menuBtnsDiv.appendChild(backBtnInAbout);
 
-        backBtnInAbout.addEventListener('click', () =>{
-            clear();
-            loadStart();
-        })
+    //     backBtnInAbout.addEventListener('click', () =>{
+    //         clear();
+    //         loadStart();
+    //     })
 
-        let aboutDiv = document.createElement('div');
-        aboutDiv.className = 'aboutPage';
-        menuBtnsDiv.appendChild(aboutDiv);
+    //     let aboutDiv = document.createElement('div');
+    //     aboutDiv.className = 'aboutPage';
+    //     menuBtnsDiv.appendChild(aboutDiv);
 
-        let imgAbout = document.createElement('div');
-        imgAbout.className = 'imgInAbout';
-        aboutDiv.appendChild(imgAbout)
-        let imgInDivAbout = document.createElement('img');
-        imgInDivAbout.src = '#';
-        imgInDivAbout.setAttribute('width', '200');
-        imgInDivAbout.setAttribute('height', '300');
-        // imgAbout.appendChild(imgInDivAbout);
+    //     let imgAbout = document.createElement('div');
+    //     imgAbout.className = 'imgInAbout';
+    //     aboutDiv.appendChild(imgAbout)
+    //     let imgInDivAbout = document.createElement('img');
+    //     imgInDivAbout.src = '#';
+    //     imgInDivAbout.setAttribute('width', '200');
+    //     imgInDivAbout.setAttribute('height', '300');
+    //     // imgAbout.appendChild(imgInDivAbout);
 
 
-        let imgAboutParagraph = document.createElement('p');
-        aboutDiv.appendChild(imgAboutParagraph);
+    //     let imgAboutParagraph = document.createElement('p');
+    //     aboutDiv.appendChild(imgAboutParagraph);
 
-        let imgAboutH2 = document.createElement('h2');
-        imgAboutH2.textContent = 'Stefan Dimitrov';
-        imgAboutH2.style.color = 'black';
-        aboutDiv.appendChild(imgAboutH2);
+    //     let imgAboutH2 = document.createElement('h2');
+    //     imgAboutH2.textContent = 'Stefan Dimitrov';
+    //     imgAboutH2.style.color = 'black';
+    //     aboutDiv.appendChild(imgAboutH2);
 
-        let buttonNext = document.createElement('button');
-        buttonNext.innerText = 'Next';
-        buttonNext.className = 'buttonNextAbout';
-        aboutDiv.appendChild(buttonNext);
+    //     let buttonNext = document.createElement('button');
+    //     buttonNext.innerText = 'Next';
+    //     buttonNext.className = 'buttonNextAbout';
+    //     aboutDiv.appendChild(buttonNext);
 
-        buttonNext.addEventListener('click', () =>{
-            clear();
-            let backBtnInAbout = document.createElement('button');
-            backBtnInAbout.className = 'aboutBack';
-            backBtnInAbout.style.backgroundColor = 'transparent';
-            backBtnInAbout.style.border = 'none';
-            backBtnInAbout.style.cursor = 'pointer';
-            backBtnInAbout.addEventListener('mouseover', mouseoverBackButton);
-            backBtnInAbout.addEventListener('mouseout', mouseoutBackButton);
-            function mouseoverBackButton(){
-                img.setAttribute('width', '300');
-                img.setAttribute('height', '150');
-            };
-            function mouseoutBackButton(){
-                img.setAttribute('width', '200');
-                img.setAttribute('height', '100');
-            }
+    //     buttonNext.addEventListener('click', () =>{
+    //         clear();
+    //         let backBtnInAbout = document.createElement('button');
+    //         backBtnInAbout.className = 'aboutBack';
+    //         backBtnInAbout.style.backgroundColor = 'transparent';
+    //         backBtnInAbout.style.border = 'none';
+    //         backBtnInAbout.style.cursor = 'pointer';
+    //         backBtnInAbout.addEventListener('mouseover', mouseoverBackButton);
+    //         backBtnInAbout.addEventListener('mouseout', mouseoutBackButton);
+    //         function mouseoverBackButton(){
+    //             img.setAttribute('width', '300');
+    //             img.setAttribute('height', '150');
+    //         };
+    //         function mouseoutBackButton(){
+    //             img.setAttribute('width', '200');
+    //             img.setAttribute('height', '100');
+    //         }
             
-            let url = ('backarrow.png');
-            let img = document.createElement('img');
-            img.src = url;
-            img.setAttribute('width', '200');
-            img.setAttribute('height', '100');
-            backBtnInAbout.appendChild(img);
-            menuBtnsDiv.appendChild(backBtnInAbout);
+    //         let url = ('images/backarrow.png');
+    //         let img = document.createElement('img');
+    //         img.src = url;
+    //         img.setAttribute('width', '200');
+    //         img.setAttribute('height', '100');
+    //         backBtnInAbout.appendChild(img);
+    //         menuBtnsDiv.appendChild(backBtnInAbout);
     
-            backBtnInAbout.addEventListener('click', () =>{
-                clear();
-                loadStart();
-            })
-            let aboutDiv = document.createElement('div');
-            aboutDiv.className = 'aboutPage';
-            menuBtnsDiv.appendChild(aboutDiv);
+    //         backBtnInAbout.addEventListener('click', () =>{
+    //             clear();
+    //             loadStart();
+    //         })
+    //         let aboutDiv = document.createElement('div');
+    //         aboutDiv.className = 'aboutPage';
+    //         menuBtnsDiv.appendChild(aboutDiv);
     
-            let imgAbout = document.createElement('div');
-            imgAbout.className = 'imgInAbout';
-            aboutDiv.appendChild(imgAbout)
+    //         let imgAbout = document.createElement('div');
+    //         imgAbout.className = 'imgInAbout';
+    //         aboutDiv.appendChild(imgAbout)
     
-            let imgAboutParagraph = document.createElement('p');
-            aboutDiv.appendChild(imgAboutParagraph);
+    //         let imgAboutParagraph = document.createElement('p');
+    //         aboutDiv.appendChild(imgAboutParagraph);
     
-            let imgAboutH2 = document.createElement('h2');
-            imgAboutH2.textContent = 'Simeon Dimitrov';
-            imgAboutH2.style.color = 'black';
-            aboutDiv.appendChild(imgAboutH2);
+    //         let imgAboutH2 = document.createElement('h2');
+    //         imgAboutH2.textContent = 'Simeon Dimitrov';
+    //         imgAboutH2.style.color = 'black';
+    //         aboutDiv.appendChild(imgAboutH2);
              
-            let buttonNext = document.createElement('button');
-            buttonNext.innerText = 'Next';
-            buttonNext.className = 'buttonNextAbout';
-            aboutDiv.appendChild(buttonNext);
+    //         let buttonNext = document.createElement('button');
+    //         buttonNext.innerText = 'Next';
+    //         buttonNext.className = 'buttonNextAbout';
+    //         aboutDiv.appendChild(buttonNext);
 
-            let previousButton = document.createElement('button');
-            previousButton.innerText = 'Previous';
-            previousButton.className = 'buttonPreviousAbout';
-            aboutDiv.appendChild(previousButton);
+    //         let previousButton = document.createElement('button');
+    //         previousButton.innerText = 'Previous';
+    //         previousButton.className = 'buttonPreviousAbout';
+    //         aboutDiv.appendChild(previousButton);
 
-            previousButton.addEventListener('click', loadAbout);
-        });
-    };
+    //         previousButton.addEventListener('click', loadAbout);
+    //     });
+    // };
 };
 
 
