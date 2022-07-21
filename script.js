@@ -248,7 +248,7 @@ function loadStart(){
             });
             img.addEventListener('mouseout', () =>{
                 img.style.border = '';
-            })
+            });
 
             const position = { x: 0, y: 0 }
 
@@ -295,6 +295,12 @@ function loadStart(){
             img.setAttribute('width', '400');
             img.setAttribute('height', '300');
             canva.appendChild(img);
+            img.addEventListener('mouseover', () =>{
+              img.style.border = 'black solid 2px';
+            });
+            img.addEventListener('mouseout', () =>{
+              img.style.border = '';
+            });
 
             const position = { x: 0, y: 0 }
 
@@ -340,6 +346,12 @@ function loadStart(){
           img.setAttribute('width', '400');
           img.setAttribute('height', '300');
           canva.appendChild(img);
+          img.addEventListener('mouseover', () =>{
+            img.style.border = 'black solid 2px';
+          });
+          img.addEventListener('mouseout', () =>{
+            img.style.border = '';
+          });
 
           const position = { x: 0, y: 0 }
 
@@ -385,6 +397,12 @@ function loadStart(){
             img.setAttribute('width', '300');
             img.setAttribute('height', '500');
             canva.appendChild(img);
+            img.addEventListener('mouseover', () =>{
+              img.style.border = 'black solid 2px';
+            });
+            img.addEventListener('mouseout', () =>{
+              img.style.border = '';
+            });
 
             const position = { x: 0, y: 0 }
 
@@ -476,7 +494,7 @@ function loadStart(){
         imgAbout.className = 'imgInAbout';
         aboutDiv.appendChild(imgAbout)
         let imgInDivAbout = document.createElement('img');
-        imgInDivAbout.src = 'софтуни.png';
+        imgInDivAbout.src = '#';
         imgInDivAbout.setAttribute('width', '200');
         imgInDivAbout.setAttribute('height', '300');
         // imgAbout.appendChild(imgInDivAbout);
