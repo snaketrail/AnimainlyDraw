@@ -1,4 +1,28 @@
 /* below is the landing page */
+.loginLink{
+    position: absolute;
+    right: 50px;
+    top: 30px;
+    font-size: 20px;
+    text-decoration: none;
+    font-weight: 600;
+    border: black solid 2px;
+    padding: 10px;
+    background-color: rgb(249, 198, 136);
+    color: black;
+}
+.registerLink{
+    position: absolute;
+    right: 150px;
+    top: 30px;
+    font-size: 20px;
+    text-decoration: none;
+    font-weight: 600;
+    border: black solid 2px;
+    padding: 10px;
+    background-color: rgb(249, 198, 136);
+    color: black;
+}
 .menuBtnsDiv{
     position: absolute;
     top: 150px;
