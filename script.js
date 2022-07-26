@@ -1,5 +1,6 @@
 window.addEventListener('load', loadStart);
 
+
 const menuBtnsDiv = document.getElementsByTagName('div')[0];
 function clear(){
     while (menuBtnsDiv.firstChild) {
@@ -8,16 +9,17 @@ function clear(){
 }
 
 function loadStart(){
+    let imgLogo = document.createElement('img');
+    imgLogo.setAttribute('width','150');
+    imgLogo.setAttribute('height','150');
+    imgLogo.className = 'imgLogo';
+    imgLogo.src = './images/animainlyLogo.png';
+    menuBtnsDiv.appendChild(imgLogo);
 
     let drawButton = document.createElement('button');
     drawButton.className = 'buttonClass';
     drawButton.innerText = 'Draw'
     menuBtnsDiv.appendChild(drawButton);
-
-    // let aboutButton = document.createElement('button');
-    // aboutButton.classList = 'buttonClass';
-    // aboutButton.innerText = 'About';
-    // menuBtnsDiv.appendChild(aboutButton)
 
     let visitButton = document.createElement('button');
     visitButton.classList = 'buttonClass';
@@ -450,130 +452,6 @@ function loadStart(){
 
         
     };
-
-
-    // aboutButton.addEventListener('click', () => {
-    //     clear();
-    //     loadAbout();
-    // });
-    
-    // function loadAbout(){
-    //     clear();
-    //     let backBtnInAbout = document.createElement('button');
-    //     backBtnInAbout.className = 'aboutBack';
-    //     backBtnInAbout.style.backgroundColor = 'transparent';
-    //     backBtnInAbout.style.border = 'none';
-    //     backBtnInAbout.style.cursor = 'pointer';
-    //     backBtnInAbout.addEventListener('mouseover', mouseoverBackButton);
-    //     backBtnInAbout.addEventListener('mouseout', mouseoutBackButton);
-    //     function mouseoverBackButton(){
-    //         img.setAttribute('width', '300');
-    //         img.setAttribute('height', '150');
-    //     };
-    //     function mouseoutBackButton(){
-    //         img.setAttribute('width', '200');
-    //         img.setAttribute('height', '100');
-    //     }
-        
-    //     let url = ('images/backarrow.png');
-    //     let img = document.createElement('img');
-    //     img.src = url;
-    //     img.setAttribute('width', '200');
-    //     img.setAttribute('height', '100');
-    //     backBtnInAbout.appendChild(img);
-    //     menuBtnsDiv.appendChild(backBtnInAbout);
-
-    //     backBtnInAbout.addEventListener('click', () =>{
-    //         clear();
-    //         loadStart();
-    //     })
-
-    //     let aboutDiv = document.createElement('div');
-    //     aboutDiv.className = 'aboutPage';
-    //     menuBtnsDiv.appendChild(aboutDiv);
-
-    //     let imgAbout = document.createElement('div');
-    //     imgAbout.className = 'imgInAbout';
-    //     aboutDiv.appendChild(imgAbout)
-    //     let imgInDivAbout = document.createElement('img');
-    //     imgInDivAbout.src = '#';
-    //     imgInDivAbout.setAttribute('width', '200');
-    //     imgInDivAbout.setAttribute('height', '300');
-    //     // imgAbout.appendChild(imgInDivAbout);
-
-
-    //     let imgAboutParagraph = document.createElement('p');
-    //     aboutDiv.appendChild(imgAboutParagraph);
-
-    //     let imgAboutH2 = document.createElement('h2');
-    //     imgAboutH2.textContent = 'Stefan Dimitrov';
-    //     imgAboutH2.style.color = 'black';
-    //     aboutDiv.appendChild(imgAboutH2);
-
-    //     let buttonNext = document.createElement('button');
-    //     buttonNext.innerText = 'Next';
-    //     buttonNext.className = 'buttonNextAbout';
-    //     aboutDiv.appendChild(buttonNext);
-
-    //     buttonNext.addEventListener('click', () =>{
-    //         clear();
-    //         let backBtnInAbout = document.createElement('button');
-    //         backBtnInAbout.className = 'aboutBack';
-    //         backBtnInAbout.style.backgroundColor = 'transparent';
-    //         backBtnInAbout.style.border = 'none';
-    //         backBtnInAbout.style.cursor = 'pointer';
-    //         backBtnInAbout.addEventListener('mouseover', mouseoverBackButton);
-    //         backBtnInAbout.addEventListener('mouseout', mouseoutBackButton);
-    //         function mouseoverBackButton(){
-    //             img.setAttribute('width', '300');
-    //             img.setAttribute('height', '150');
-    //         };
-    //         function mouseoutBackButton(){
-    //             img.setAttribute('width', '200');
-    //             img.setAttribute('height', '100');
-    //         }
-            
-    //         let url = ('images/backarrow.png');
-    //         let img = document.createElement('img');
-    //         img.src = url;
-    //         img.setAttribute('width', '200');
-    //         img.setAttribute('height', '100');
-    //         backBtnInAbout.appendChild(img);
-    //         menuBtnsDiv.appendChild(backBtnInAbout);
-    
-    //         backBtnInAbout.addEventListener('click', () =>{
-    //             clear();
-    //             loadStart();
-    //         })
-    //         let aboutDiv = document.createElement('div');
-    //         aboutDiv.className = 'aboutPage';
-    //         menuBtnsDiv.appendChild(aboutDiv);
-    
-    //         let imgAbout = document.createElement('div');
-    //         imgAbout.className = 'imgInAbout';
-    //         aboutDiv.appendChild(imgAbout)
-    
-    //         let imgAboutParagraph = document.createElement('p');
-    //         aboutDiv.appendChild(imgAboutParagraph);
-    
-    //         let imgAboutH2 = document.createElement('h2');
-    //         imgAboutH2.textContent = 'Simeon Dimitrov';
-    //         imgAboutH2.style.color = 'black';
-    //         aboutDiv.appendChild(imgAboutH2);
-             
-    //         let buttonNext = document.createElement('button');
-    //         buttonNext.innerText = 'Next';
-    //         buttonNext.className = 'buttonNextAbout';
-    //         aboutDiv.appendChild(buttonNext);
-
-    //         let previousButton = document.createElement('button');
-    //         previousButton.innerText = 'Previous';
-    //         previousButton.className = 'buttonPreviousAbout';
-    //         aboutDiv.appendChild(previousButton);
-
-    //         previousButton.addEventListener('click', loadAbout);
-    //     });
-    // };
 };
 
 

@@ -11,6 +11,16 @@
     background-color: rgb(249, 198, 136);
     color: black;
 }
+.loginLink:hover{
+    cursor: pointer;
+    background-color: aqua;
+    border: solid white 2px;
+}
+.registerLink:hover{
+    cursor: pointer;
+    background-color:aqua;
+    border: solid white 2px;
+}
 .registerLink{
     position: absolute;
     right: 150px;
@@ -25,11 +35,16 @@
 }
 .menuBtnsDiv{
     position: absolute;
-    top: 150px;
+    top: 250px;
     left: 400px;
     width: 700px;
     height: 400px;
     display: block;
+}
+.imgLogo{
+    position: absolute;
+    top: -180px;
+    left: 260px;
 }
 .buttonClass{
     font-size: 20px;
