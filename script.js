@@ -114,7 +114,6 @@ function loadStart(){
         dropDcontent.appendChild(btninDrop3);
         dropDiv1.appendChild(btn2);
         dropDiv1.appendChild(dropDcontent1);
-
         btninDrop3.className = 'links';
         btninDrop3.innerText = 'Apartment';
         dropDiv1.className = 'dropDd1';
@@ -122,6 +121,7 @@ function loadStart(){
         dropDcontent.id = 'dropItDown';
         dropDcontent1.id = 'dropItDown1';
         dropDcontent1.className = 'noShow';
+
 
         let dropDiv2 = document.createElement('div');
         dropDiv2.className = 'dropDd2';

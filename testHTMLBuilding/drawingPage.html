@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="stelysheet.css">
+    <title>Animainly Draw</title>
+</head>
+<body>
+    <div class="menuBtnsDiv">
+        <!-- <div id="canva" class="canvaStyle">
+
+        </div> -->
+        <canvas id="canva" class="canvaStyle">
+
+        </canvas>
+        <div class="divForBtns">
+                    <div class="dropdown">
+            <button onclick="myFunction()" class="btnInDrawDiv">Backgrounds</button>
+            <div id="myDropdown" class="dropdown-content">
+                <button id="imgApartment" class="links">Apartment</button>
+                <button id="imgSchool" class="links">School</button>
+                <button id="imgPark" class="links">Park</button>
+                <button id="imgShopping" class="links">Shopping</button>
+            </div>
+        </div>
+            <!-- <button class="btnInDrawDiv">Background</button> -->
+        <div class="dropdown1">
+            <button onclick="myFunction1()" class="btnInDrawDiv">Characters</button>
+            <div id="myDropdown1" class="dropdown-content">
+                <button id="girlBtn" class="links">Girl</button>
+                <button id="boyBtn" class="links">Boy</button>
+            </div>
+        </div>
+            <!-- <button class="btnInDrawDiv">Characters</button> -->
+        <div class="dropdown2">
+            <button onclick="myFunction2()" class="btnInDrawDiv">Speech Bubbles</button>
+            <div id="myDropdown2" class="dropdown-content">
+              <button class="links">Bubble 1</button>
+              <button class="links">Bubble 2</button>
+            </div>
+        </div>
+            <!-- <button class="btnInDrawDiv">Subscribe</button>
+            <button class="btnInDrawDiv">Shop</button> -->
+            <button id="clearBtn" class="btnInDrawDiv">Clear All</button>
+            <button id ="undoBtn" class="btnInDrawDiv">Undo</button>
+            <button id="mainMenu" class="btnInDrawDivMenu">Main Menu</button>
+        </div>
+    </div>
+    <script src="buttons.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
+    <script src="drawingPage.js"></script>
+</body>
+</html>
