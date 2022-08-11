@@ -47,29 +47,19 @@ function clear(){
     };
 }
 document.getElementById('mainMenu').addEventListener('click', () => {
-    location.href = 'menuPage.html';
+    location.href = 'index.html';
 })
-document.getElementById('clearBtn').addEventListener('click', () => {
-    clear();
-})
-document.getElementById('undoBtn').addEventListener('click', ()=>{
+function undoIt(){
     canva.removeChild(canva.lastChild);
-})
-// document.getElementById('ClearCanv').onclick = function(){
-//     ctx.clearRect(0,0,canvas.width,canvas.height);
-//     restoreArr = [];
-//     indexOfArr = -1;
-// }
-// document.getElementById('UndoLast').onclick = function(){
-//     if(indexOfArr <=0){
-//         ctx.clearRect(0,0,canvas.width,canvas.height);
-//     }else{
-//         indexOfArr-=1;
-//         restoreArr.pop();
-//         ctx.putImageData(restoreArr[indexOfArr], 0, 0);
+}
+function clearCnavas(){
+    while(canva.firstChild){
+        canva.removeChild(canva.firstChild);
+    };
+};
+document.getElementById('clearBtn').addEventListener('click', clear);
+document.getElementById('undoBtn').addEventListener('click', undoIt);
 
-//     }
-// }
 document.getElementById('imgApartment').addEventListener('click', ()=>{
     clear()
     let apartment = document.createElement('img');
@@ -168,6 +158,161 @@ document.getElementById('boyBtn').addEventListener('click', () =>{
     });
     img.addEventListener('mouseout', () =>{
       img.style.border = '';
+    });
+
+    const position = { x: 0, y: 0 }
+
+    interact('.draggable').draggable({
+        listeners: {
+            start (event) {
+            },
+            move (event) {
+                position.x += event.dx
+                position.y += event.dy
+
+                event.target.style.transform =
+                    `translate(${position.x}px, ${position.y}px)`;
+            },
+        }
+    })
+    interact('.draggable')
+    .resizable({
+      edges: { top: true, left: true, bottom: true, right: true },
+      listeners: {
+        move: function (event) {
+          let { x, y } = event.target.dataset
+  
+          x = (parseFloat(x) || 0) + event.deltaRect.left
+          y = (parseFloat(y) || 0) + event.deltaRect.top
+  
+          Object.assign(event.target.style, {
+            width: `${event.rect.width}px`,
+            height: `${event.rect.height}px`,
+            transform: `translate(${x}px, ${y}px)`
+          })
+  
+          Object.assign(event.target.dataset, { x, y })
+        }
+      }
+    })
+});
+// document.getElementById('bubble1').addEventListener('click', () =>{
+
+//     let img = document.createElement('img');
+//     img.className = 'draggable';
+//     img.src = 'bubble.png';
+//     img.setAttribute('width', '400');
+//     img.setAttribute('height', '300');
+//     canva.appendChild(img);
+//     img.addEventListener('mouseover', () =>{
+//       img.style.border = 'black solid 2px';
+//     });
+//     img.addEventListener('mouseout', () =>{
+//       img.style.border = '';
+//     });
+
+//     const position = { x: 0, y: 0 }
+
+//     interact('.draggable').draggable({
+//         listeners: {
+//             start (event) {
+//             },
+//             move (event) {
+//                 position.x += event.dx
+//                 position.y += event.dy
+
+//                 event.target.style.transform =
+//                     `translate(${position.x}px, ${position.y}px)`;
+//             },
+//         }
+//     })
+//     interact('.draggable')
+//     .resizable({
+//       edges: { top: true, left: true, bottom: true, right: true },
+//       listeners: {
+//         move: function (event) {
+//           let { x, y } = event.target.dataset
+  
+//           x = (parseFloat(x) || 0) + event.deltaRect.left
+//           y = (parseFloat(y) || 0) + event.deltaRect.top
+  
+//           Object.assign(event.target.style, {
+//             width: `${event.rect.width}px`,
+//             height: `${event.rect.height}px`,
+//             transform: `translate(${x}px, ${y}px)`
+//           })
+  
+//           Object.assign(event.target.dataset, { x, y })
+//         }
+//       }
+//     })
+// });
+// document.getElementById('buble2').addEventListener('click', () =>{
+
+//     let img = document.createElement('img');
+//     img.className = 'draggable';
+//     img.src = 'buble2.png';
+//     img.setAttribute('width', '400');
+//     img.setAttribute('height', '300');
+//     canva.appendChild(img);
+//     img.addEventListener('mouseover', () =>{
+//       img.style.border = 'black solid 2px';
+//     });
+//     img.addEventListener('mouseout', () =>{
+//       img.style.border = 'none';
+//     });
+
+//     const position = { x: 0, y: 0 }
+
+//     interact('.draggable').draggable({
+//         listeners: {
+//             start (event) {
+//             },
+//             move (event) {
+//                 position.x += event.dx
+//                 position.y += event.dy
+
+//                 event.target.style.transform =
+//                     `translate(${position.x}px, ${position.y}px)`;
+//             },
+//         }
+//     })
+//     interact('.draggable')
+//     .resizable({
+//       edges: { top: true, left: true, bottom: true, right: true },
+//       listeners: {
+//         move: function (event) {
+//           let { x, y } = event.target.dataset
+  
+//           x = (parseFloat(x) || 0) + event.deltaRect.left
+//           y = (parseFloat(y) || 0) + event.deltaRect.top
+  
+//           Object.assign(event.target.style, {
+//             width: `${event.rect.width}px`,
+//             height: `${event.rect.height}px`,
+//             transform: `translate(${x}px, ${y}px)`
+//           })
+  
+//           Object.assign(event.target.dataset, { x, y })
+//         }
+//       }
+//     })
+// });
+document.getElementById('textBtn').addEventListener('click', () =>{
+
+    let ipField = document.createElement('textarea');
+    ipField.className = 'inputEl';
+    ipField.classList.add('draggable');
+    // ipField.className = 'draggable';
+    ipField.style.backgroundColor = 'white';
+    ipField.setAttribute('width', '400');
+    ipField.setAttribute('height', '300');
+    canva.appendChild(ipField);
+    ipField.addEventListener('mouseover', () =>{
+      ipField.style.border = 'black solid 2px';
+    });
+    ipField.addEventListener('mouseout', () =>{
+      ipField.style.border = '';
     });
 
     const position = { x: 0, y: 0 }

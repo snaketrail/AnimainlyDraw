@@ -24,64 +24,27 @@
 body{
     background-color: rgb(249, 125, 146);
 }
-/* stop landing page
+#LoginUserNameInfo{
+    position: absolute;
+    top: -150px;
+    right: -150px;
+    font-size: large;
+}
 
-start about page*/
+/* start of draw */
+.canvaStyle{
+    
+        background: white;
+        background-image: none;
+        position: absolute;
+        margin-left: -6px;
+        border: solid black 3px;
+        height: 700px;
+        width: 1200px;
+        top: -130px;
+        left: -380px;
 
-.aboutPage{
-    position: absolute;
-    top: -50px;
-    left: 0px;
-    width: 700px;
-    height: 600px;
-    border: black solid 2px;
-    background-color: bisque;
-}
-.imgInAbout{
-    float: left;
-    margin-top: 150px;
-    margin-left: 20px;
-    height: 300px;
-    width: 250px;
-    background-color: aliceblue;
-}
-.imgInAbout p{
-    margin-top: 300px;
-    float: right;
-}
-.buttonNextAbout{
-    position: absolute;
-    bottom: 10px;
-    height: 30px;
-    width: 100px;
-    right: 150px;
-    border: black solid 1px;
-    background-color: pink;
-}
-.buttonNextAbout:hover{
-    background-color: rgb(248, 110, 133);
-}
-.buttonPreviousAbout{
-    position: absolute;
-    bottom: 10px;
-    height: 30px;
-    width: 100px;
-    left: 150px;
-    border: black solid 1px;
-    background-color: pink;
-}
-.buttonPreviousAbout:hover{
-    background-color: rgb(248, 110, 133);
-}
-.aboutBack{
-    position: absolute;
-    top: -120px;
-    left: -300px;
-    height: 100px;
-    width: 200px;
-}
-/* end of about
-and start of drawingPage */
+    }
 .divForBtns{
     position: absolute;
     height: 700px;
@@ -237,11 +200,31 @@ and start of drawingPage */
     font-weight: 600;
     margin-left: 25px;
 }
+.inputEl{
+    width: 200px;
+    font-size: 25px;
+    font-family: Arial, Helvetica, sans-serif;
+    overflow: hidden;
+    border-radius: 300px;
+    padding-left: 50px;
+    padding-right: 50px;
+    padding-top: 25px;
+    padding-bottom: 25px;
+    resize: none;
+}
 .links:hover{
     background-color: rgb(249, 100, 125);
 }
 .noShow{
     display: none;
+}
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+.dropdown-content{
+    display: none;
+    position: absolute;
 }
 .show{
     display: block;
