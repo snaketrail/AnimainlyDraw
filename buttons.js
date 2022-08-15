@@ -61,36 +61,42 @@ document.getElementById('clearBtn').addEventListener('click', clear);
 document.getElementById('undoBtn').addEventListener('click', undoIt);
 
 document.getElementById('imgApartment').addEventListener('click', ()=>{
-    clear()
-    let apartment = document.createElement('img');
-    apartment.style.width = '1200px';
-    apartment.style.height = '700px';
-    apartment.src = 'background1.png';
-    canva.appendChild(apartment);
+    // clear()
+    // let apartment = document.createElement('img');
+    // apartment.style.width = '1200px';
+    // apartment.style.height = '700px';
+    // apartment.src = 'background1.png';
+    // canva.appendChild(apartment);
+
+    canva.style.backgroundImage = "url(background1Fix.png)";
+    // canva.style.backgroundSize = "width = 700";
 })
 document.getElementById('imgShopping').addEventListener('click', ()=>{
-    clear()
-    let apartment = document.createElement('img');
-    apartment.style.width = '1200px';
-    apartment.style.height = '700px';
-    apartment.src = 'shopping.png';
-    canva.appendChild(apartment);
+    // clear()
+    // let apartment = document.createElement('img');
+    // apartment.style.width = '1200px';
+    // apartment.style.height = '700px';
+    // apartment.src = 'shopping.png';
+    // canva.appendChild(apartment);
+    canva.style.backgroundImage = "url(shopping.png)";
 })
 document.getElementById('imgSchool').addEventListener('click', ()=>{
-    clear()
-    let apartment = document.createElement('img');
-    apartment.style.width = '1200px';
-    apartment.style.height = '700px';
-    apartment.src = 'school.png';
-    canva.appendChild(apartment);
+    // clear()
+    // let apartment = document.createElement('img');
+    // apartment.style.width = '1200px';
+    // apartment.style.height = '700px';
+    // apartment.src = 'school.png';
+    // canva.appendChild(apartment);
+    canva.style.backgroundImage = "url(school.png)";
 })
 document.getElementById('imgPark').addEventListener('click', ()=>{
-    clear()
-    let apartment = document.createElement('img');
-    apartment.style.width = '1200px';
-    apartment.style.height = '700px';
-    apartment.src = 'park.png';
-    canva.appendChild(apartment);
+    // clear()
+    // let apartment = document.createElement('img');
+    // apartment.style.width = '1200px';
+    // apartment.style.height = '700px';
+    // apartment.src = 'park.png';
+    // canva.appendChild(apartment);
+    canva.style.backgroundImage = "url(park.png)";
 })
 
 document.getElementById('girlBtn').addEventListener('click', () =>{
@@ -105,6 +111,7 @@ document.getElementById('girlBtn').addEventListener('click', () =>{
         img.style.border = 'black solid 2px';
     });
     img.addEventListener('mouseout', () =>{
+        img.classList.remove('draggable');
         img.style.border = '';
     });
 
@@ -122,7 +129,7 @@ document.getElementById('girlBtn').addEventListener('click', () =>{
                     `translate(${position.x}px, ${position.y}px)`;
             },
         }
-    })
+    });
     interact('.draggable')
     .resizable({
       edges: { top: true, left: true, bottom: true, right: true },
@@ -143,6 +150,7 @@ document.getElementById('girlBtn').addEventListener('click', () =>{
         }
       }
     })
+
 });
 
 document.getElementById('boyBtn').addEventListener('click', () =>{
