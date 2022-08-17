@@ -61,41 +61,16 @@ document.getElementById('clearBtn').addEventListener('click', clear);
 document.getElementById('undoBtn').addEventListener('click', undoIt);
 
 document.getElementById('imgApartment').addEventListener('click', ()=>{
-    // clear()
-    // let apartment = document.createElement('img');
-    // apartment.style.width = '1200px';
-    // apartment.style.height = '700px';
-    // apartment.src = 'background1.png';
-    // canva.appendChild(apartment);
 
     canva.style.backgroundImage = "url(background1Fix.png)";
-    // canva.style.backgroundSize = "width = 700";
 })
 document.getElementById('imgShopping').addEventListener('click', ()=>{
-    // clear()
-    // let apartment = document.createElement('img');
-    // apartment.style.width = '1200px';
-    // apartment.style.height = '700px';
-    // apartment.src = 'shopping.png';
-    // canva.appendChild(apartment);
     canva.style.backgroundImage = "url(shopping.png)";
 })
 document.getElementById('imgSchool').addEventListener('click', ()=>{
-    // clear()
-    // let apartment = document.createElement('img');
-    // apartment.style.width = '1200px';
-    // apartment.style.height = '700px';
-    // apartment.src = 'school.png';
-    // canva.appendChild(apartment);
     canva.style.backgroundImage = "url(school.png)";
 })
 document.getElementById('imgPark').addEventListener('click', ()=>{
-    // clear()
-    // let apartment = document.createElement('img');
-    // apartment.style.width = '1200px';
-    // apartment.style.height = '700px';
-    // apartment.src = 'park.png';
-    // canva.appendChild(apartment);
     canva.style.backgroundImage = "url(park.png)";
 })
 
@@ -111,10 +86,9 @@ document.getElementById('girlBtn').addEventListener('click', () =>{
         img.style.border = 'black solid 2px';
     });
     img.addEventListener('mouseout', () =>{
-        img.classList.remove('draggable');
         img.style.border = '';
     });
-
+    // img.classList.remove('draggable');
     const position = { x: 0, y: 0 }
 
     interact('.draggable').draggable({
@@ -204,114 +178,12 @@ document.getElementById('boyBtn').addEventListener('click', () =>{
       }
     })
 });
-// document.getElementById('bubble1').addEventListener('click', () =>{
 
-//     let img = document.createElement('img');
-//     img.className = 'draggable';
-//     img.src = 'bubble.png';
-//     img.setAttribute('width', '400');
-//     img.setAttribute('height', '300');
-//     canva.appendChild(img);
-//     img.addEventListener('mouseover', () =>{
-//       img.style.border = 'black solid 2px';
-//     });
-//     img.addEventListener('mouseout', () =>{
-//       img.style.border = '';
-//     });
-
-//     const position = { x: 0, y: 0 }
-
-//     interact('.draggable').draggable({
-//         listeners: {
-//             start (event) {
-//             },
-//             move (event) {
-//                 position.x += event.dx
-//                 position.y += event.dy
-
-//                 event.target.style.transform =
-//                     `translate(${position.x}px, ${position.y}px)`;
-//             },
-//         }
-//     })
-//     interact('.draggable')
-//     .resizable({
-//       edges: { top: true, left: true, bottom: true, right: true },
-//       listeners: {
-//         move: function (event) {
-//           let { x, y } = event.target.dataset
-  
-//           x = (parseFloat(x) || 0) + event.deltaRect.left
-//           y = (parseFloat(y) || 0) + event.deltaRect.top
-  
-//           Object.assign(event.target.style, {
-//             width: `${event.rect.width}px`,
-//             height: `${event.rect.height}px`,
-//             transform: `translate(${x}px, ${y}px)`
-//           })
-  
-//           Object.assign(event.target.dataset, { x, y })
-//         }
-//       }
-//     })
-// });
-// document.getElementById('buble2').addEventListener('click', () =>{
-
-//     let img = document.createElement('img');
-//     img.className = 'draggable';
-//     img.src = 'buble2.png';
-//     img.setAttribute('width', '400');
-//     img.setAttribute('height', '300');
-//     canva.appendChild(img);
-//     img.addEventListener('mouseover', () =>{
-//       img.style.border = 'black solid 2px';
-//     });
-//     img.addEventListener('mouseout', () =>{
-//       img.style.border = 'none';
-//     });
-
-//     const position = { x: 0, y: 0 }
-
-//     interact('.draggable').draggable({
-//         listeners: {
-//             start (event) {
-//             },
-//             move (event) {
-//                 position.x += event.dx
-//                 position.y += event.dy
-
-//                 event.target.style.transform =
-//                     `translate(${position.x}px, ${position.y}px)`;
-//             },
-//         }
-//     })
-//     interact('.draggable')
-//     .resizable({
-//       edges: { top: true, left: true, bottom: true, right: true },
-//       listeners: {
-//         move: function (event) {
-//           let { x, y } = event.target.dataset
-  
-//           x = (parseFloat(x) || 0) + event.deltaRect.left
-//           y = (parseFloat(y) || 0) + event.deltaRect.top
-  
-//           Object.assign(event.target.style, {
-//             width: `${event.rect.width}px`,
-//             height: `${event.rect.height}px`,
-//             transform: `translate(${x}px, ${y}px)`
-//           })
-  
-//           Object.assign(event.target.dataset, { x, y })
-//         }
-//       }
-//     })
-// });
 document.getElementById('textBtn').addEventListener('click', () =>{
 
     let ipField = document.createElement('textarea');
     ipField.className = 'inputEl';
     ipField.classList.add('draggable');
-    // ipField.className = 'draggable';
     ipField.style.backgroundColor = 'white';
     ipField.setAttribute('width', '400');
     ipField.setAttribute('height', '300');
