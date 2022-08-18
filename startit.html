@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./pages/startit.css">
+    <script
+    type="text/javascript"
+    src="https://npmcdn.com/parse/dist/parse.min.js"
+  ></script>
+    <title>Animainly</title>
+</head>
+<body>
+    <button class="startBtn">Register</button>
+    <button class="startBtn1">Login</button>
+
+    <script>
+        document.getElementsByTagName('button')[0].addEventListener('click', ()=>{
+            location.href = 'pages/register.html'
+        });
+        document.getElementsByTagName('button')[1].addEventListener('click', ()=>{
+            location.href = 'pages/login.html'
+        });
+    </script>
+</body>
+</html>

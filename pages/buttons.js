@@ -62,23 +62,23 @@ document.getElementById('undoBtn').addEventListener('click', undoIt);
 
 document.getElementById('imgApartment').addEventListener('click', ()=>{
 
-    canva.style.backgroundImage = "url(background1Fix.png)";
+    canva.style.backgroundImage = "url(images/background1Fix.png)";
 })
 document.getElementById('imgShopping').addEventListener('click', ()=>{
-    canva.style.backgroundImage = "url(shopping.png)";
+    canva.style.backgroundImage = "url(images/shopping.png)";
 })
 document.getElementById('imgSchool').addEventListener('click', ()=>{
-    canva.style.backgroundImage = "url(school.png)";
+    canva.style.backgroundImage = "url(images/school.png)";
 })
 document.getElementById('imgPark').addEventListener('click', ()=>{
-    canva.style.backgroundImage = "url(park.png)";
+    canva.style.backgroundImage = "url(images/park.png)";
 })
 
 document.getElementById('girlBtn').addEventListener('click', () =>{
 
     let img = document.createElement('img');
     img.className = 'draggable';
-    img.src = 'girl2.png';
+    img.src = 'images/girl2.png';
     img.setAttribute('width', '300');
     img.setAttribute('height', '500');
     canva.appendChild(img);
@@ -131,7 +131,7 @@ document.getElementById('boyBtn').addEventListener('click', () =>{
 
     let img = document.createElement('img');
     img.className = 'draggable';
-    img.src = 'boy.png';
+    img.src = 'images/boy.png';
     img.setAttribute('width', '300');
     img.setAttribute('height', '500');
     canva.appendChild(img);
