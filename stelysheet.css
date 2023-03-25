@@ -30,21 +30,101 @@ body{
     right: -150px;
     font-size: large;
 }
+/* below is the landing page */
+.menuBtnsDiv-start{
+    position: absolute;
+    top: 150px;
+    left: 400px;
+    width: 700px;
+    height: 400px;
+    display: block;
+}
+.buttonClass-start{
+    font-size: 20px;
+    font-weight: bolder;
+    width: 400px;
+    height: 100px;
+    margin: 10px;
+    margin-left: 140px;
+    background-color: antiquewhite;
+}
+.buttonClass-start:hover{
+    background-color: aqua;
+    cursor: pointer;
+    transform: scale(1.1);
+}
+
+#LoginUserNameInfo{
+    position: absolute;
+    top: -150px;
+    right: -150px;
+    font-size: large;
+}
+/* styles for mobile screens */
+@media (max-width: 767px) {
+    .menuBtnsDiv-start {
+      position: static;
+      width: 100%;
+      height: auto;
+      padding: 20px;
+    }
+    .buttonClass-start {
+      width: 100%;
+      max-width: 400px;
+      margin: 10px auto;
+    }
+    #LoginUserNameInfo {
+      position: static;
+      margin-top: 20px;
+      text-align: center;
+    }
+  }
+  
+  /* styles for computer screens */
+  @media (min-width: 768px) {
+    .menuBtnsDiv-start {
+      position: absolute;
+      top: 150px;
+      left: 400px;
+      width: 700px;
+      height: 400px;
+      display: block;
+    }
+    .buttonClass-start {
+      font-size: 20px;
+      font-weight: bolder;
+      width: 400px;
+      height: 100px;
+      margin: 10px;
+      margin-left: 140px;
+      background-color: antiquewhite;
+    }
+    .buttonClass-start:hover {
+      background-color: aqua;
+      cursor: pointer;
+      transform: scale(1.1);
+    }
+    #LoginUserNameInfo {
+      position: absolute;
+      top: -150px;
+      right: -150px;
+      font-size: large;
+    }
+  }
 
 /* start of draw */
 .canvaStyle{
-    
-        background: white;
-        background-image: none;
-        position: absolute;
-        margin-left: -6px;
-        border: solid black 3px;
-        height: 700px;
-        width: 1200px;
-        top: -130px;
-        left: -380px;
+    background: white;
+    background-image: none;
+    position: absolute;
+    margin-left: -6px;
+    border: solid black 3px;
+    height: 700px;
+    width: 1200px;
+    top: -130px;
+    left: -380px;
+}
 
-    }
 .divForBtns{
     position: absolute;
     height: 700px;
@@ -54,6 +134,7 @@ body{
     background-color: rgb(226, 226, 226);
     border: solid black 3px;
 }
+
 .btnInDrawDiv{
     width: 250px;
     height: 50px;
@@ -67,9 +148,11 @@ body{
     box-shadow: 5px 9px 15px 5px rgba(0,0,0,0.67);
     border-radius: 3%;
 }
+
 .btnInDrawDiv:hover{
     background-color: rgb(254, 110, 134);
 }
+
 .btnInDrawDivMenu{
     position: absolute;
     bottom: 10px;
@@ -85,9 +168,42 @@ body{
     box-shadow: 5px 9px 15px 5px rgba(0,0,0,0.67);
     border-radius: 3%;
 }
+
 .btnInDrawDivMenu:hover{
     background-color: rgb(254, 110, 134);
 }
+
+/* media queries for responsive design */
+@media (max-width: 1200px) {
+  .canvaStyle {
+    width: 100%;
+    left: 0;
+    margin-left: 0;
+  }
+  
+  .divForBtns {
+    width: 25%;
+    right: 0;
+    left: unset;
+  }
+}
+
+@media (max-width: 768px) {
+  .canvaStyle {
+    height: 500px;
+  }
+  
+  .divForBtns {
+    height: 500px;
+  }
+  
+  .btnInDrawDiv,
+  .btnInDrawDivMenu {
+    height: 40px;
+    font-size: 16px;
+  }
+}
+
 .dragged{
     opacity: 0.3;
 }
