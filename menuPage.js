@@ -7,7 +7,7 @@ btnDraw.addEventListener('click', ()=>{
 const btnVisit = document.querySelectorAll('button')[1];
 
 btnVisit.addEventListener('click', ()=>{
-    location.href = 'https://www.animainly.com/';
+    location.href = 'https://snaketrail.github.io/portfolioWebsite/index.html';
 })
 
 const btnExit = document.querySelectorAll('button')[2];
