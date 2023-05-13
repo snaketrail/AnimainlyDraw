@@ -211,7 +211,13 @@ body{
     position: absolute;
     top: 200px;
     left: 350px;
+    width: 200px;
+    height: 200px;
+
 }
+.draggable:nth-child(2) {
+    transform: translate(300px, 0);
+  }
 .dropDd{
     margin-bottom: 10px;
     width: 250px;
