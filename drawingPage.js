@@ -1,34 +1,22 @@
-// Get the merge button element
-const mergeButton = document.getElementById('mergeButton');
-mergeButton.addEventListener('click', mergeImages);
+// Get the button element
+const captureButton = document.getElementById('captureButton');
 
-function mergeImages() {
-  // Get the canva element
-  const canva = document.getElementById('canva');
+// Add click event listener to the button
+captureButton.addEventListener('click', () => {
+  // Get the div element you want to capture
+  const divToCapture = document.getElementById('canva');
 
-  // Create a new canvas to draw the merged image
-  const mergedCanvas = document.createElement('canvas');
-  const mergedCtx = mergedCanvas.getContext('2d');
+  // Use HTML2Canvas to capture the div as a canvas
+  html2canvas(divToCapture).then(canvas => {
+    // Convert the canvas to a data URL
+    const dataURL = canvas.toDataURL();
 
-  // Set the merged canvas size based on the canva element
-  mergedCanvas.width = canva.offsetWidth;
-  mergedCanvas.height = canva.offsetHeight;
+    // Create a temporary link element
+    const link = document.createElement('a');
+    link.href = dataURL;
+    link.download = 'screenshot.png';
 
-  // Get all the images inside the canva element
-  const images = canva.getElementsByTagName('img');
-
-  // Draw each image onto the merged canvas
-  Array.from(images).forEach((image) => {
-    mergedCtx.drawImage(image, 0, 0);
+    // Simulate a click on the link to trigger the download
+    link.click();
   });
-
-  // Convert the merged canvas content into an image
-  const mergedImage = new Image();
-  mergedImage.src = mergedCanvas.toDataURL();
-
-  // Create a download link for the merged image
-  const anchor = document.createElement('a');
-  anchor.href = mergedImage.src;
-  anchor.download = 'merged_image.png';
-  anchor.click();
-}
+});
