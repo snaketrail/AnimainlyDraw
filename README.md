@@ -11,5 +11,4 @@ Feature I want it to have:
 -image storage like a database;
 -more images to help with drawing.
 
-PS: I'm too lazy to do the about page right now.
-About page is commented because I'm not sure if I want to remove it.
+Added a merge fuction that screenshots the canvas. I'm just trying to avoid html canvas as much as possible because of bugs.
