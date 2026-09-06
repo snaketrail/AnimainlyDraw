@@ -17,7 +17,13 @@ Thumbs.db
 !.vscode/extensions.json
 .idea/
 
-# env
+# env and secrets
+# API keys belong in the app's own settings (stored in the browser), never in
+# a file here — this repo publishes to GitHub Pages, so anything committed is
+# public permanently.
 .env
 .env.local
 .env.*.local
+*.key
+secrets.json
+**/secrets/

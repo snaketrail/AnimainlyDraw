@@ -23,15 +23,17 @@ import type {
   Project,
 } from '../lib/types'
 import type { GeneratedPage, LlmSettings } from '../lib/llm'
-import { DEFAULT_LLM } from '../lib/llm'
+import { DEFAULT_LLM, generateChapterBeats, generateSeries } from '../lib/llm'
 import {
   PRINT,
   clampToPage,
   createId,
   emptyPage,
   emptyProject,
+  composePrompt,
   emptySeries,
   emptyStyle,
+  randomSeed,
   isBubble,
   isImage,
   normalizeTag,
@@ -39,6 +41,9 @@ import {
   panelRect,
 } from '../lib/types'
 import { LAYOUTS, panelsFromLayout } from '../lib/layouts'
+import { PANEL_SIZES, generateImage, sizeForShot } from '../lib/images'
+import type { ComfySettings } from '../lib/comfy'
+import { DEFAULT_COMFY, generate as comfyGenerate } from '../lib/comfy'
 import * as storage from '../lib/storage'
 
 /**
@@ -51,6 +56,9 @@ import * as storage from '../lib/storage'
 type ObjectPatch = Partial<Omit<ImageObject, 'type'>> | Partial<Omit<BubbleObject, 'type'>>
 
 const HISTORY_LIMIT = 50
+
+/** Set by stopBatch, read by the drawAll loop between panels. */
+let batchCancelled = false
 
 /** Long enough for a slow disk, short enough that nobody stares at a splash screen. */
 const STORAGE_TIMEOUT_MS = 3000
@@ -125,6 +133,10 @@ interface State {
   llm: LlmSettings
   setLlm: (patch: Partial<LlmSettings>) => void
 
+  /** Local ComfyUI settings, remembered between sessions. */
+  comfy: ComfySettings
+  setComfy: (patch: Partial<ComfySettings>) => void
+
   /** Story plan: series, chapters, and the beats that become pages. */
   setSeries: (patch: Partial<Series>) => void
   setChapterBeats: (chapterIndex: number, beats: string[]) => void
@@ -132,6 +144,36 @@ interface State {
 
   /** Turn a written page into real panels, captions and speech bubbles. */
   applyGeneratedPage: (generated: GeneratedPage, onNewPage: boolean, beatId?: string) => void
+
+  /**
+   * Plan a whole manga from one sentence: series, cast, style, and every
+   * chapter broken into pages. One call instead of a dozen clicks.
+   */
+  autoPlan: (idea: string, minPages: number, maxPages: number) => Promise<void>
+  /** What the planner is doing right now, for the progress line. */
+  planProgress: string | null
+
+  /**
+   * Generate art for one panel from its stored prompt, and place it.
+   * `pageIndex` defaults to the page on screen; batch runs pass it explicitly.
+   */
+  generatePanelArt: (panelId: string, pageIndex?: number) => Promise<void>
+  /** Panels currently being drawn, so the UI can show progress per panel. */
+  generatingPanels: string[]
+  /** Live progress from the renderer, e.g. "rendering… 12s". */
+  generatingMessage: string | null
+
+  /**
+   * Draw every empty panel across a range of pages, one at a time.
+   *
+   * Sequential on purpose: a local GPU renders one image at a time anyway, and
+   * queueing dozens at once would only make the wait opaque and the cancel
+   * useless.
+   */
+  drawAll: (scope: 'page' | 'book') => Promise<void>
+  /** Cancel a running batch after the current panel finishes. */
+  stopBatch: () => void
+  batch: { done: number; total: number; label: string } | null
   /** Replace everything with a project loaded from a .animainly file. */
   loadFromFile: (loaded: { project: Project; assets: Asset[] }) => void
 
@@ -147,7 +189,11 @@ function migrateProject(project: Project): Project {
   return {
     ...project,
     style: project.style ?? emptyStyle(),
-    characters: project.characters ?? [],
+    // Characters written before seeds existed get one now, so their panels
+    // start sharing a noise pattern from here on.
+    characters: (project.characters ?? []).map((c) =>
+      c.seed === undefined ? { ...c, seed: randomSeed() } : c,
+    ),
     series: project.series ?? emptySeries(),
     pages: (project.pages ?? []).map((page) => ({
       ...page,
@@ -297,7 +343,12 @@ export const useStore = create<State>((set, get) => {
     currentPageIndex: 0,
     selectedId: null,
     selectedPanelId: null,
+    generatingPanels: [],
+    generatingMessage: null,
+    batch: null,
+    planProgress: null,
     llm: DEFAULT_LLM,
+    comfy: DEFAULT_COMFY,
     loading: true,
     storageBlocked: false,
     importError: null,
@@ -310,18 +361,24 @@ export const useStore = create<State>((set, get) => {
       // settles at all rather than rejecting, so a plain try/catch would leave
       // the app on its splash screen forever. Race it and move on.
       try {
-        const [project, assets, llm] = await withTimeout(
+        const [project, assets, llm, comfy] = await withTimeout(
           Promise.all([
             storage.loadProject(),
             storage.loadAssetIndex(),
             storage.loadLlmSettings<LlmSettings>(),
+            storage.loadComfySettings<ComfySettings>(),
           ]),
           STORAGE_TIMEOUT_MS,
         )
         set({
           project: project ? migrateProject(project) : emptyProject(),
-          assets: migrateAssets(assets),
+          assets: (() => {
+            const migrated = migrateAssets(assets)
+            storage.rememberRemoteAssets(migrated)
+            return migrated
+          })(),
           llm: { ...DEFAULT_LLM, ...(llm ?? {}) },
+          comfy: { ...DEFAULT_COMFY, ...(comfy ?? {}) },
           loading: false,
           currentPageIndex: 0,
           storageBlocked: false,
@@ -750,6 +807,9 @@ export const useStore = create<State>((set, get) => {
         role,
         prompt: '',
         notes: '',
+        // Every character gets one from the start, so their panels share a
+        // starting point rather than each rolling fresh noise.
+        seed: randomSeed(),
       }
       edit((project) => ({ ...project, characters: [...project.characters, character] }))
     },
@@ -772,6 +832,12 @@ export const useStore = create<State>((set, get) => {
       const llm = { ...get().llm, ...patch }
       set({ llm })
       void storage.saveLlmSettings(llm)
+    },
+
+    setComfy(patch) {
+      const comfy = { ...get().comfy, ...patch }
+      set({ comfy })
+      void storage.saveComfySettings(comfy)
     },
 
     setSeries(patch) {
@@ -821,12 +887,27 @@ export const useStore = create<State>((set, get) => {
       const { project } = get()
       const size = pageSizeOf(project)
 
+      // The written panels are the source of truth, not the layout name.
+      //
+      // A model that picks "Classic manga" (six frames) and then writes four
+      // panels leaves two frames with no prompt — they can never be drawn, and
+      // the page has holes in it. So the named layout is only honoured when it
+      // is the right size; otherwise the closest-fitting layout wins.
+      const wanted = generated.panels.length
+      const named = LAYOUTS.find(
+        (l) => l.name.toLowerCase() === generated.layout.toLowerCase(),
+      )
+
       const layout =
-        LAYOUTS.find((l) => l.name.toLowerCase() === generated.layout.toLowerCase()) ??
-        // The model was told which names are valid, but a wrong one shouldn't
-        // lose the page: fall back to a layout with the right panel count.
-        LAYOUTS.find((l) => l.cells.length === generated.panels.length) ??
-        LAYOUTS.find((l) => l.name === 'Classic manga')!
+        named && named.cells.length === wanted
+          ? named
+          : (LAYOUTS.find((l) => l.cells.length === wanted) ??
+            // No exact match: take the nearest size, so at worst one frame is
+            // spare rather than several.
+            [...LAYOUTS].sort(
+              (a, b) =>
+                Math.abs(a.cells.length - wanted) - Math.abs(b.cells.length - wanted),
+            )[0]!)
 
       const panels = panelsFromLayout(layout)
       const objects: PageObject[] = []
@@ -834,6 +915,20 @@ export const useStore = create<State>((set, get) => {
       generated.panels.forEach((written, i) => {
         const panel = panels[i]
         if (!panel) return
+
+        // Keep the writer's prompt on the panel so art can be generated now
+        // or much later, without re-running the model.
+        panel.prompt = written.prompt
+        panel.shot = written.shot
+
+        // Map the writer's character names onto real cast entries, so drawing
+        // this panel can apply their appearance tags and their seed. Matched
+        // case-insensitively: models capitalise inconsistently.
+        const named = (written.characters ?? []).map((n) => n.trim().toLowerCase())
+        panel.characterIds = project.characters
+          .filter((c) => named.includes(c.name.trim().toLowerCase()))
+          .map((c) => c.id)
+
         const box = panelRect(panel, size)
 
         // Dialogue becomes a speech bubble near the top of its panel; narration
@@ -845,10 +940,12 @@ export const useStore = create<State>((set, get) => {
             id: createId(),
             kind: 'speech',
             text: written.dialogue,
-            x: box.x + box.width * 0.08,
-            y: box.y + box.height * 0.06,
-            width: Math.min(box.width * 0.6, size.width * 0.34),
-            height: Math.min(box.height * 0.34, size.height * 0.08),
+            // Sit clear of the panel border rather than straddling it: a
+            // bubble pinned to the very edge reads as a mistake, not a choice.
+            x: box.x + box.width * 0.06,
+            y: box.y + box.height * 0.08,
+            width: Math.min(box.width * 0.5, size.width * 0.3),
+            height: Math.min(box.height * 0.3, size.height * 0.07),
             tailAngle: 90,
             tailLength: 0,
             fontSize: Math.round(size.width * 0.019),
@@ -875,7 +972,10 @@ export const useStore = create<State>((set, get) => {
         }
       })
 
-      const page: Page = { id: createId(), panels, objects }
+      // Never leave a frame that no panel was written for: an empty box the
+      // user cannot fill reads as a bug, not a design choice.
+      const usedPanels = panels.slice(0, Math.max(1, generated.panels.length))
+      const page: Page = { id: createId(), panels: usedPanels, objects }
 
       edit((current) => ({
         ...current,
@@ -901,6 +1001,254 @@ export const useStore = create<State>((set, get) => {
         selectedId: null,
         selectedPanelId: null,
       })
+    },
+
+    stopBatch() {
+      // Read by the loop between panels; the in-flight render still finishes,
+      // which is kinder than throwing away work already paid for in GPU time.
+      set({ batch: get().batch ? { ...get().batch!, label: 'stopping…' } : null })
+      batchCancelled = true
+    },
+
+    async drawAll(scope) {
+      const { project, currentPageIndex } = get()
+
+      const pages =
+        scope === 'page'
+          ? [{ page: project.pages[currentPageIndex]!, index: currentPageIndex }]
+          : project.pages.map((page, index) => ({ page, index }))
+
+      // Only panels that have a prompt and no art yet, so a stopped run can be
+      // resumed by pressing the same button again.
+      const jobs = pages.flatMap(({ page, index }) =>
+        page.panels
+          .filter(
+            (panel) =>
+              panel.prompt &&
+              !page.objects.some((o) => isImage(o) && o.panelId === panel.id),
+          )
+          .map((panel) => ({ panelId: panel.id, pageIndex: index })),
+      )
+
+      if (jobs.length === 0) {
+        set({ importError: 'Every panel with a prompt already has art' })
+        return
+      }
+
+      batchCancelled = false
+      const startedOn = currentPageIndex
+      // Clear any earlier message: the loop below uses importError to notice a
+      // failed panel, and a stale one would stop the batch before it started.
+      set({ importError: null, batch: { done: 0, total: jobs.length, label: 'starting…' } })
+
+      try {
+        for (const [i, job] of jobs.entries()) {
+          if (batchCancelled) break
+          set({
+            batch: {
+              done: i,
+              total: jobs.length,
+              label: `page ${job.pageIndex + 1}`,
+            },
+          })
+          await get().generatePanelArt(job.panelId, job.pageIndex)
+
+          // One failure shouldn't abandon the rest of the book, but a run of
+          // them means something is wrong — stop rather than grind through.
+          if (get().importError) break
+        }
+      } finally {
+        const done = get().batch?.done ?? 0
+        set({ batch: null })
+        // Put the user back where they started, not on whatever page the
+        // batch happened to end on.
+        if (get().currentPageIndex !== startedOn) set({ currentPageIndex: startedOn })
+        if (batchCancelled) set({ importError: `Stopped after ${done} panels` })
+      }
+    },
+
+    async autoPlan(idea, minPages, maxPages) {
+      const llm = get().llm
+      if (!llm.model) throw new Error('Choose a model first')
+
+      set({ planProgress: 'Planning the story…' })
+
+      try {
+        const plan = await generateSeries(llm, get().project, idea, minPages, maxPages)
+
+        // Adopt the cast and style the model invented, unless the author has
+        // already written their own — theirs wins.
+        const existing = get().project.characters
+        const characters =
+          existing.length > 0
+            ? existing
+            : plan.characters.map((c) => ({ id: createId(), ...c, seed: randomSeed() }))
+
+        edit((project) => ({
+          ...project,
+          style: {
+            ...project.style,
+            synopsis: plan.premise,
+            positive: project.style.positive.trim() && existing.length > 0
+              ? project.style.positive
+              : [plan.style, 'manga style, clean line art, screentone shading']
+                  .filter(Boolean)
+                  .join(', '),
+          },
+          characters,
+          series: {
+            premise: plan.premise,
+            ending: plan.ending,
+            chapters: plan.chapters.map((c) => ({
+              id: createId(),
+              title: c.title,
+              summary: c.summary,
+              beats: [],
+              planned: false,
+            })),
+          },
+        }))
+
+        // Then break every chapter into pages, in order, so each one is
+        // written knowing what the chapters before it established.
+        const total = plan.chapters.length
+        for (let i = 0; i < total; i++) {
+          const chapter = plan.chapters[i]!
+          set({
+            planProgress: `Chapter ${i + 1} of ${total}: ${chapter.title}`,
+          })
+          const beats = await generateChapterBeats(
+            get().llm,
+            get().project,
+            i,
+            chapter.pages,
+            undefined,
+            (done, count) =>
+              set({
+                planProgress: `Chapter ${i + 1} of ${total}: ${chapter.title} — ${done}/${count} pages`,
+              }),
+          )
+          get().setChapterBeats(i, beats)
+        }
+
+        const pages = get().project.series.chapters.reduce(
+          (sum, c) => sum + c.beats.length,
+          0,
+        )
+        set({ planProgress: `Planned ${total} chapters, ${pages} pages` })
+      } catch (error) {
+        set({ planProgress: null })
+        throw error
+      }
+    },
+
+    async generatePanelArt(panelId, pageIndex) {
+      const { project, currentPageIndex } = get()
+      const index = pageIndex ?? currentPageIndex
+      const page = project.pages[index]
+      const panel = page?.panels.find((p) => p.id === panelId)
+      if (!page || !panel?.prompt) return
+
+      set({ generatingPanels: [...get().generatingPanels, panelId] })
+
+      try {
+        const size = PANEL_SIZES[sizeForShot(panel.shot ?? '')]
+        // The style bible and cast are folded in here, not stored per panel,
+        // so editing the style restyles every future generation.
+        const { positive, negative } = composePrompt(
+          project,
+          panel.prompt,
+          panel.characterIds ?? [],
+        )
+
+        // Seed order: the one this panel already used (so a redraw reproduces
+        // it), else the lead character's (so their panels share a starting
+        // point), else fresh noise.
+        const lead = project.characters.find((c) =>
+          (panel.characterIds ?? []).includes(c.id),
+        )
+        const seed = panel.seed ?? lead?.seed ?? randomSeed()
+
+        const { imageProvider, imageKey, imageModel } = get().llm
+
+        let blob: Blob | undefined
+        let remoteUrl: string | undefined
+        let width: number = size.width
+        let height: number = size.height
+
+        if (imageProvider === 'comfy') {
+          // A local render always gives us the bytes, so the art is genuinely
+          // the user's: offline-capable and stored in project files.
+          blob = await comfyGenerate(
+            get().comfy,
+            {
+              prompt: positive,
+              negative,
+              width: size.width,
+              height: size.height,
+              seed,
+            },
+            undefined,
+            (message) => set({ generatingMessage: message }),
+          )
+        } else {
+          const image = await generateImage({
+            prompt: positive,
+            negative,
+            width: size.width,
+            height: size.height,
+            apiKey: imageKey,
+            model: imageModel,
+          })
+          blob = image.blob
+          remoteUrl = image.blob ? undefined : image.url
+          width = image.width
+          height = image.height
+        }
+
+        const asset: Asset = {
+          id: createId(),
+          name: (panel.shot || 'panel').slice(0, 24),
+          fileName: `${panel.prompt.slice(0, 40)}.png`,
+          tags: ['generated'],
+          width,
+          height,
+          size: blob?.size ?? 0,
+          addedAt: Date.now(),
+          remoteUrl,
+        }
+
+        if (blob) await storage.saveAssetBlob(asset.id, blob)
+
+        // Remember the seed so this exact panel can be reproduced, or
+        // deliberately re-rolled from the inspector.
+        if (panel.seed !== seed) {
+          editPage((pg) => ({
+            ...pg,
+            panels: pg.panels.map((x) => (x.id === panelId ? { ...x, seed } : x)),
+          }))
+        }
+
+        const assets = [...get().assets, asset]
+        set({ assets })
+        storage.rememberRemoteAssets(assets)
+        void storage.saveAssetIndex(assets)
+
+        // placeAsset works on the page in view, so make sure that is the page
+        // this panel belongs to before dropping the art in.
+        if (get().currentPageIndex !== index) set({ currentPageIndex: index })
+        get().placeAsset(asset.id, panelId)
+      } catch (error) {
+        set({
+          importError:
+            error instanceof Error ? error.message : 'Could not generate that image',
+        })
+      } finally {
+        set({
+          generatingPanels: get().generatingPanels.filter((id) => id !== panelId),
+          generatingMessage: null,
+        })
+      }
     },
 
     loadFromFile({ project, assets: incoming }) {

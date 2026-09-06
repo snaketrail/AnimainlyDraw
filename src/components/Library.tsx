@@ -16,13 +16,13 @@ function Thumb({ asset }: { asset: Asset }) {
 
   useEffect(() => {
     let cancelled = false
-    void assetUrl(asset.id).then((u) => {
+    void assetUrl(asset.id, asset.remoteUrl).then((u) => {
       if (!cancelled) setUrl(u)
     })
     return () => {
       cancelled = true
     }
-  }, [asset.id])
+  }, [asset.id, asset.remoteUrl])
 
   return url ? (
     <img src={url} alt="" className="thumb-img" loading="lazy" />

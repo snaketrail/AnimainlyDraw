@@ -4,7 +4,11 @@
  * The style bible and cast exist to stop a book drifting. An AI asked to draw
  * "the girl" forty times will produce forty different girls, so her appearance
  * is written down once and reused — the same reason a studio keeps model
- * sheets. Nothing here leaves the machine: the model runs locally.
+ * sheets.
+ *
+ * The writing model is either a local server (nothing leaves the machine) or
+ * Google Gemini (the prompt does, and a key is needed). The choice is the
+ * user's and is made explicit in the connection row.
  */
 
 import { useEffect, useState } from 'react'
@@ -12,13 +16,14 @@ import { useStore } from '../store/useStore'
 import {
   generateChapterBeats,
   generatePage,
-  generateSeries,
   listModels,
   type GeneratedPage,
 } from '../lib/llm'
-import { composePrompt } from '../lib/types'
+import { composePrompt, randomSeed } from '../lib/types'
+import { IMAGE_MODELS } from '../lib/images'
+import { isPonyCheckpoint, listCheckpoints } from '../lib/comfy'
 
-type Tab = 'plan' | 'story' | 'style' | 'cast'
+type Tab = 'plan' | 'story' | 'style' | 'cast' | 'art'
 
 export function StoryPanel({ onClose }: { onClose: () => void }) {
   const project = useStore((s) => s.project)
@@ -31,6 +36,10 @@ export function StoryPanel({ onClose }: { onClose: () => void }) {
   const applyGeneratedPage = useStore((s) => s.applyGeneratedPage)
   const setSeries = useStore((s) => s.setSeries)
   const setChapterBeats = useStore((s) => s.setChapterBeats)
+  const autoPlan = useStore((s) => s.autoPlan)
+  const comfy = useStore((s) => s.comfy)
+  const setComfy = useStore((s) => s.setComfy)
+  const planProgress = useStore((s) => s.planProgress)
 
   const [tab, setTab] = useState<Tab>('plan')
   const [models, setModels] = useState<string[]>([])
@@ -45,20 +54,56 @@ export function StoryPanel({ onClose }: { onClose: () => void }) {
 
   // Planning
   const [idea, setIdea] = useState('')
-  const [chapterCount, setChapterCount] = useState(6)
-  const [pagesPerChapter, setPagesPerChapter] = useState(8)
+  const [minPages, setMinPages] = useState(40)
+  const [maxPages, setMaxPages] = useState(50)
   const [planning, setPlanning] = useState<string | null>(null)
   const [openChapter, setOpenChapter] = useState<number | null>(0)
+
+  // ComfyUI
+  const [checkpoints, setCheckpoints] = useState<string[]>([])
+  const [comfyState, setComfyState] = useState<'idle' | 'checking' | 'ok' | 'error'>('idle')
+  const [comfyError, setComfyError] = useState<string | null>(null)
+
+  // Look for ComfyUI on open too, so the Art tab is usable straight away.
+  useEffect(() => {
+    if (useStore.getState().llm.imageProvider === 'comfy') void findCheckpoints()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  async function findCheckpoints() {
+    setComfyState('checking')
+    setComfyError(null)
+    try {
+      const found = await listCheckpoints(useStore.getState().comfy.baseUrl)
+      setCheckpoints(found)
+      setComfyState('ok')
+      if (found.length === 0) {
+        setComfyError('ComfyUI is running but has no checkpoints installed yet')
+      } else if (!found.includes(useStore.getState().comfy.checkpoint)) {
+        // Prefer a Pony checkpoint: it is what suits manga best.
+        const pony = found.find((c) => isPonyCheckpoint(c))
+        setComfy({ checkpoint: pony ?? found[0]! })
+      }
+    } catch (e) {
+      setComfyState('error')
+      setComfyError(e instanceof Error ? e.message : 'Could not reach ComfyUI')
+    }
+  }
 
   async function connect() {
     setConnection('checking')
     setError(null)
+    // Read the store at call time, not from this render's closure: typing a new
+    // address updates the store, but a handler captured before that would keep
+    // using the old one, so the first Reconnect after an edit hit the previous
+    // server.
+    const current = useStore.getState().llm
     try {
-      const found = await listModels(llm.baseUrl)
+      const found = await listModels(current)
       setModels(found)
       setConnection('ok')
       // Pick a chat model automatically so the first run needs no fiddling.
-      if (!llm.model || !found.includes(llm.model)) {
+      if (!current.model || !found.includes(current.model)) {
         const preferred = found.find((m) => /instruct|chat/i.test(m)) ?? found[0]
         if (preferred) setLlm({ model: preferred })
       }
@@ -68,9 +113,16 @@ export function StoryPanel({ onClose }: { onClose: () => void }) {
     }
   }
 
-  // Try once on open: usually the server is already running and this saves a click.
+  // Try once on open: a local server is usually already running, so this saves
+  // a click. Gemini is skipped until a key exists, so opening the panel never
+  // fires a request the user has not asked for.
+  //
+  // The drawer unmounts when closed, so this runs again on every reopen. It
+  // reads the stored settings rather than this render's copy, which is what
+  // makes reopening pick up the address the user last saved.
   useEffect(() => {
-    void connect()
+    const saved = useStore.getState().llm
+    if (saved.provider === 'local' || saved.apiKey.trim()) void connect()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -102,7 +154,7 @@ export function StoryPanel({ onClose }: { onClose: () => void }) {
     setResult(null)
     try {
       const page = await generatePage(
-        llm,
+        useStore.getState().llm,
         project,
         summary,
         project.pages.length + (onNewPage ? 1 : 0),
@@ -122,18 +174,9 @@ export function StoryPanel({ onClose }: { onClose: () => void }) {
     setPlanning('series')
     setError(null)
     try {
-      const plan = await generateSeries(llm, project, idea.trim() || project.style.synopsis, chapterCount)
-      setSeries({
-        premise: plan.premise,
-        ending: plan.ending,
-        chapters: plan.chapters.map((c) => ({
-          id: crypto.randomUUID(),
-          title: c.title,
-          summary: c.summary,
-          beats: [],
-          planned: false,
-        })),
-      })
+      // One call plans the series, invents the cast, picks a style, and
+      // breaks every chapter into pages.
+      await autoPlan(idea.trim() || project.style.synopsis, minPages, maxPages)
       setOpenChapter(0)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Planning failed')
@@ -147,7 +190,16 @@ export function StoryPanel({ onClose }: { onClose: () => void }) {
     setPlanning(`chapter-${index}`)
     setError(null)
     try {
-      const beats = await generateChapterBeats(llm, project, index, pagesPerChapter)
+      const beats = await generateChapterBeats(
+        useStore.getState().llm,
+        project,
+        index,
+        project.series.chapters[index]?.beats.length || 8,
+        undefined,
+        // A 90-page chapter takes several requests; say so rather than
+        // appearing to hang.
+        (done, total) => setPlanning(`chapter-${index}|${done}/${total}`),
+      )
       setChapterBeats(index, beats)
       setOpenChapter(index)
     } catch (e) {
@@ -173,7 +225,7 @@ export function StoryPanel({ onClose }: { onClose: () => void }) {
       <header className="drawer-head">
         <h2>Story</h2>
         <nav className="tabs">
-          {(['plan', 'story', 'style', 'cast'] as Tab[]).map((t) => (
+          {(['plan', 'story', 'style', 'cast', 'art'] as Tab[]).map((t) => (
             <button
               key={t}
               className={`tab${tab === t ? ' is-on' : ''}`}
@@ -192,13 +244,42 @@ export function StoryPanel({ onClose }: { onClose: () => void }) {
         {/* ---------- connection ---------- */}
         <div className="conn">
           <span className={`dot-status is-${connection}`} aria-hidden="true" />
-          <input
-            className="conn-url"
-            value={llm.baseUrl}
-            onChange={(e) => setLlm({ baseUrl: e.target.value })}
-            placeholder="http://localhost:1234/v1"
-            spellCheck={false}
-          />
+
+          <select
+            className="select conn-provider"
+            value={llm.provider}
+            onChange={(e) => {
+              // Switching provider invalidates the model list and any chosen
+              // model, so clear both rather than showing a stale selection.
+              setLlm({ provider: e.target.value as 'local' | 'gemini', model: '' })
+              setModels([])
+              setConnection('idle')
+              setError(null)
+            }}
+          >
+            <option value="local">Local (LM Studio)</option>
+            <option value="gemini">Google Gemini</option>
+          </select>
+
+          {llm.provider === 'local' ? (
+            <input
+              className="conn-url"
+              value={llm.baseUrl}
+              onChange={(e) => setLlm({ baseUrl: e.target.value })}
+              placeholder="http://localhost:1234/v1"
+              spellCheck={false}
+            />
+          ) : (
+            <input
+              className="conn-url"
+              type="password"
+              value={llm.apiKey}
+              onChange={(e) => setLlm({ apiKey: e.target.value })}
+              placeholder="Google AI Studio API key"
+              spellCheck={false}
+              autoComplete="off"
+            />
+          )}
           <select
             className="select conn-model"
             value={llm.model}
@@ -220,6 +301,17 @@ export function StoryPanel({ onClose }: { onClose: () => void }) {
           </button>
         </div>
 
+        {llm.provider === 'gemini' && (
+          <p className="hint no-top">
+            The key is kept in this browser only — it is not saved into project files
+            and never reaches GitHub. Get one free at{' '}
+            <a href="https://aistudio.google.com/apikey" target="_blank" rel="noreferrer">
+              aistudio.google.com/apikey
+            </a>
+            .
+          </p>
+        )}
+
         {error && <p className="notice" role="alert">{error}</p>}
 
         {/* ---------- plan ---------- */}
@@ -228,25 +320,35 @@ export function StoryPanel({ onClose }: { onClose: () => void }) {
             {project.series.chapters.length === 0 ? (
               <>
                 <label className="field">
-                  What is the whole manga about?
+                  What is the manga about?
                   <textarea
                     className="bubble-text"
-                    rows={3}
+                    rows={4}
                     value={idea}
                     onChange={(e) => setIdea(e.target.value)}
-                    placeholder="A girl living alone beneath a floating spire discovers the woodcutter who protects her is bound to it."
+                    placeholder="A mage killing demons to atone for his sins saves a boy from a slaughtered caravan and raises him. When the boy learns the mage is not his father, he must choose between finding his real family and following the mage's path."
                   />
                 </label>
+
                 <div className="row">
                   <label className="check">
-                    Chapters
+                    Pages
                     <input
                       className="num"
                       type="number"
-                      min={1}
-                      max={30}
-                      value={chapterCount}
-                      onChange={(e) => setChapterCount(Number(e.target.value))}
+                      min={4}
+                      max={200}
+                      value={minPages}
+                      onChange={(e) => setMinPages(Number(e.target.value))}
+                    />
+                    to
+                    <input
+                      className="num"
+                      type="number"
+                      min={4}
+                      max={200}
+                      value={maxPages}
+                      onChange={(e) => setMaxPages(Number(e.target.value))}
                     />
                   </label>
                   <button
@@ -254,12 +356,16 @@ export function StoryPanel({ onClose }: { onClose: () => void }) {
                     onClick={() => void planSeries()}
                     disabled={planning !== null || connection !== 'ok'}
                   >
-                    {planning === 'series' ? 'Planning…' : 'Plan the manga'}
+                    {planning === 'series' ? 'Planning…' : 'Plan the whole manga'}
                   </button>
                 </div>
+
+                {planProgress && <p className="progress">{planProgress}</p>}
+
                 <p className="hint no-top">
-                  The whole story first, then each chapter into pages, then each page into
-                  panels. Every level is written knowing the ones above it.
+                  One prompt is enough. The writer decides the chapters, invents
+                  the cast, picks an art style, and breaks every chapter into
+                  pages — all in one go.
                 </p>
               </>
             ) : (
@@ -281,19 +387,6 @@ export function StoryPanel({ onClose }: { onClose: () => void }) {
                   </button>
                 </div>
 
-                <div className="row">
-                  <label className="check">
-                    Pages per chapter
-                    <input
-                      className="num"
-                      type="number"
-                      min={1}
-                      max={40}
-                      value={pagesPerChapter}
-                      onChange={(e) => setPagesPerChapter(Number(e.target.value))}
-                    />
-                  </label>
-                </div>
 
                 <ol className="chapters">
                   {project.series.chapters.map((chapter, i) => {
@@ -321,8 +414,10 @@ export function StoryPanel({ onClose }: { onClose: () => void }) {
                             onClick={() => void planChapter(i)}
                             disabled={planning !== null || connection !== 'ok'}
                           >
-                            {planning === `chapter-${i}`
-                              ? 'Planning…'
+                            {planning?.startsWith(`chapter-${i}`)
+                              ? planning.includes('|')
+                                ? `${planning.split('|')[1]}…`
+                                : 'Planning…'
                               : chapter.planned
                                 ? 'Re-plan'
                                 : 'Plan pages'}
@@ -488,12 +583,173 @@ export function StoryPanel({ onClose }: { onClose: () => void }) {
           </div>
         )}
 
+        {/* ---------- art ---------- */}
+        {tab === 'art' && (
+          <div className="pane">
+            <label className="field">
+              Where art comes from
+              <select
+                className="select"
+                value={llm.imageProvider}
+                onChange={(e) =>
+                  setLlm({ imageProvider: e.target.value as 'comfy' | 'pollinations' })
+                }
+              >
+                <option value="comfy">ComfyUI on this machine</option>
+                <option value="pollinations">Pollinations (hosted)</option>
+              </select>
+            </label>
+
+            {llm.imageProvider === 'comfy' ? (
+              <>
+                <div className="row">
+                  <input
+                    className="conn-url"
+                    value={comfy.baseUrl}
+                    onChange={(e) => setComfy({ baseUrl: e.target.value })}
+                    placeholder="http://127.0.0.1:8188"
+                    spellCheck={false}
+                  />
+                  <button
+                    className="btn"
+                    onClick={() => void findCheckpoints()}
+                    disabled={comfyState === 'checking'}
+                  >
+                    {comfyState === 'checking' ? 'Checking…' : 'Connect'}
+                  </button>
+                  <span className={`dot-status is-${comfyState}`} aria-hidden="true" />
+                </div>
+
+                {comfyError && (
+                  <p className="notice" role="alert">
+                    {comfyError}
+                  </p>
+                )}
+
+                <label className="field">
+                  Checkpoint
+                  <select
+                    className="select"
+                    value={comfy.checkpoint}
+                    onChange={(e) => setComfy({ checkpoint: e.target.value })}
+                    disabled={checkpoints.length === 0}
+                  >
+                    {checkpoints.length === 0 ? (
+                      <option value="">no checkpoints found</option>
+                    ) : (
+                      checkpoints.map((c) => (
+                        <option key={c} value={c}>
+                          {c}
+                        </option>
+                      ))
+                    )}
+                  </select>
+                </label>
+
+                <div className="field-row">
+                  <label>
+                    Steps
+                    <input
+                      type="number"
+                      min={4}
+                      max={80}
+                      value={comfy.steps}
+                      onChange={(e) => setComfy({ steps: Number(e.target.value) })}
+                    />
+                  </label>
+                  <label>
+                    CFG
+                    <input
+                      type="number"
+                      min={1}
+                      max={20}
+                      step={0.5}
+                      value={comfy.cfg}
+                      onChange={(e) => setComfy({ cfg: Number(e.target.value) })}
+                    />
+                  </label>
+                </div>
+
+                <label className="check">
+                  <input
+                    type="checkbox"
+                    checked={comfy.safeMode}
+                    onChange={(e) => setComfy({ safeMode: e.target.checked })}
+                  />
+                  Keep panels clothed
+                </label>
+
+                {isPonyCheckpoint(comfy.checkpoint) && (
+                  <p className="hint no-top">
+                    Pony checkpoint detected — the score tags it was trained on are added
+                    automatically.{' '}
+                    {comfy.safeMode
+                      ? 'Pony drifts adult on its own, so nudity is blocked in the negative prompt too.'
+                      : 'With this unchecked nothing blocks nudity, and Pony produces it readily.'}
+                  </p>
+                )}
+
+                <p className="hint no-top">
+                  ComfyUI must be started with <code>--enable-cors-header</code>, or the
+                  browser will refuse to talk to it. Nothing leaves your machine, there is
+                  no key and no quota.
+                </p>
+              </>
+            ) : (
+              <>
+                <label className="field">
+                  Pollinations API key (optional)
+                  <input
+                    className="conn-url"
+                    type="password"
+                    value={llm.imageKey}
+                    onChange={(e) => setLlm({ imageKey: e.target.value })}
+                    placeholder="pk_… or sk_…  — leave blank for the free tier"
+                    spellCheck={false}
+                    autoComplete="off"
+                  />
+                </label>
+
+                <label className="field">
+                  Image model
+                  <select
+                    className="select"
+                    value={llm.imageModel}
+                    onChange={(e) => setLlm({ imageModel: e.target.value })}
+                  >
+                    <option value="">Automatic</option>
+                    {IMAGE_MODELS.map((m) => (
+                      <option
+                        key={m.id}
+                        value={m.id}
+                        disabled={m.needsKey && !llm.imageKey.trim()}
+                      >
+                        {m.label}
+                        {m.needsKey && !llm.imageKey.trim() ? ' — needs a key' : ''}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <p className="hint no-top">
+                  {llm.imageKey.trim()
+                    ? 'With a key, art is downloaded and stored in this browser. A publishable key used straight from a browser is rate limited to roughly one image an hour.'
+                    : 'Without a key, art is free but stays a link to Pollinations: it needs the internet to display and is not saved into project files.'}
+                </p>
+              </>
+            )}
+          </div>
+        )}
+
         {/* ---------- cast ---------- */}
         {tab === 'cast' && (
           <div className="pane">
             <p className="hint no-top">
               Write down what each character looks like once. Their description is added to
               every panel they appear in, so they stay recognisable from page 1 to page 100.
+              The appearance tags do the real work here — a seed only fixes the noise the
+              renderer starts from, so it reproduces a panel exactly but will not carry a
+              face between different poses.
             </p>
 
             <CastSection
@@ -525,9 +781,12 @@ function CastSection({
   onDelete,
 }: {
   title: string
-  characters: { id: string; name: string; prompt: string; notes: string }[]
+  characters: { id: string; name: string; prompt: string; notes: string; seed?: number }[]
   onAdd: () => void
-  onChange: (id: string, patch: { name?: string; prompt?: string; notes?: string }) => void
+  onChange: (
+    id: string,
+    patch: { name?: string; prompt?: string; notes?: string; seed?: number },
+  ) => void
   onDelete: (id: string) => void
 }) {
   return (
@@ -568,6 +827,25 @@ function CastSection({
               onChange={(e) => onChange(c.id, { notes: e.target.value })}
               placeholder="personality, voice, what they want (for the writer only)"
             />
+
+            <div className="seed-row">
+              <label>
+                Seed
+                <input
+                  className="num seed-num"
+                  type="number"
+                  value={c.seed ?? 0}
+                  onChange={(e) => onChange(c.id, { seed: Number(e.target.value) })}
+                />
+              </label>
+              <button
+                className="link-btn"
+                onClick={() => onChange(c.id, { seed: randomSeed() })}
+                title="Roll a new starting point for this character"
+              >
+                Re-roll
+              </button>
+            </div>
           </div>
         ))
       )}

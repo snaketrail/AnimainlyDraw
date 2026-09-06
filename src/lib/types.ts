@@ -27,9 +27,18 @@ export interface Asset {
   /** Natural pixel dimensions, measured at import so we never re-decode to find them. */
   width: number
   height: number
-  /** Bytes, for the storage readout. */
+  /** Bytes, for the storage readout. 0 for a remote asset. */
   size: number
   addedAt: number
+  /**
+   * Set when the picture lives on someone else's server rather than in this
+   * browser. Generated art has to work this way: the image host sends no CORS
+   * headers, so its pixels can never be read into a Blob, only displayed.
+   *
+   * The consequence is honest and worth knowing — a remote asset needs the
+   * internet to show, and disappears if the host does.
+   */
+  remoteUrl?: string
 }
 
 /** Page dimensions in pixels at the project's working resolution. */
@@ -57,6 +66,15 @@ export const PAGE_SIZES: Record<string, PageSize> = {
  */
 export interface Panel {
   id: string
+  /** The image prompt the writer produced for this panel, if any. Kept so art
+   *  can be generated (or regenerated) long after the page was planned. */
+  prompt?: string
+  /** What kind of shot it is, which decides a sensible image aspect ratio. */
+  shot?: string
+  /** Cast members appearing here, so their look and seed can be applied. */
+  characterIds?: string[]
+  /** The seed this panel was last drawn with, so it can be reproduced exactly. */
+  seed?: number
   /** All 0-1, relative to the inner frame. */
   x: number
   y: number
@@ -176,6 +194,11 @@ export function innerFrame(size: PageSize) {
   }
 }
 
+/** A fresh random seed, in the range samplers accept. */
+export function randomSeed(): number {
+  return Math.floor(Math.random() * 2 ** 31)
+}
+
 /** Resolve a panel's 0-1 coordinates to absolute page pixels. */
 export function panelRect(panel: Panel, size: PageSize) {
   const frame = innerFrame(size)
@@ -203,6 +226,21 @@ export interface Character {
   prompt: string
   /** Free notes for the writer — personality, voice, arc. Never sent to image models. */
   notes: string
+  /**
+   * A fixed noise seed for this character.
+   *
+   * Worth being precise about what this does, because it is easy to expect too
+   * much of it: a seed fixes the *noise* the sampler starts from, so the same
+   * prompt and seed reproduce an image exactly (verified byte-identical). It
+   * does NOT carry a face between different prompts — change the pose or the
+   * setting and you get a different rendering of the same description.
+   *
+   * What it is genuinely good for: re-rendering a panel you liked after
+   * tweaking the wording, and giving each character a consistent starting
+   * point so their panels vary less than pure chance would allow. The heavy
+   * lifting for identity is still the appearance tags in `prompt`.
+   */
+  seed?: number
 }
 
 /**

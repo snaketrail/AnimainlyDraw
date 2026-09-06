@@ -25,6 +25,25 @@ export default function App() {
   const [busy, setBusy] = useState(false)
   const [status, setStatus] = useState<string | null>(null)
   const [storyOpen, setStoryOpen] = useState(false)
+  const [drawMenu, setDrawMenu] = useState(false)
+  const drawAll = useStore((s) => s.drawAll)
+  const stopBatch = useStore((s) => s.stopBatch)
+  const batch = useStore((s) => s.batch)
+
+  // How many panels are still waiting for art, so the menu can say so rather
+  // than leaving the user to guess what a batch would do.
+  const pending = (() => {
+    const count = (page: (typeof project.pages)[number]) =>
+      page.panels.filter(
+        (panel) =>
+          panel.prompt && !page.objects.some((o) => o.type === 'image' && o.panelId === panel.id),
+      ).length
+    const here = project.pages[pageIndex]
+    return {
+      page: here ? count(here) : 0,
+      book: project.pages.reduce((sum, page) => sum + count(page), 0),
+    }
+  })()
   const assets = useStore((s) => s.assets)
   const loadFromFile = useStore((s) => s.loadFromFile)
   const projectFileRef = useRef<HTMLInputElement>(null)
@@ -32,6 +51,21 @@ export default function App() {
   useEffect(() => {
     void init()
   }, [init])
+
+  // A dropdown that only closes by re-clicking its own button feels broken.
+  useEffect(() => {
+    if (!drawMenu) return
+    const close = (e: MouseEvent) => {
+      if (!(e.target as HTMLElement).closest('.menu-wrap')) setDrawMenu(false)
+    }
+    const escape = (e: KeyboardEvent) => e.key === 'Escape' && setDrawMenu(false)
+    document.addEventListener('mousedown', close)
+    document.addEventListener('keydown', escape)
+    return () => {
+      document.removeEventListener('mousedown', close)
+      document.removeEventListener('keydown', escape)
+    }
+  }, [drawMenu])
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -142,6 +176,58 @@ export default function App() {
           >
             Story AI
           </button>
+
+          {batch ? (
+            <button className="btn btn-accent" onClick={stopBatch} title="Stop after this panel">
+              {batch.label === 'stopping…'
+                ? 'Stopping…'
+                : `Drawing ${batch.done + 1}/${batch.total} — stop`}
+            </button>
+          ) : (
+            <span className="menu-wrap">
+              <button
+                className={`btn${drawMenu ? ' is-on' : ''}`}
+                onClick={() => setDrawMenu((open) => !open)}
+                disabled={pending.book === 0}
+                title={
+                  pending.book === 0
+                    ? 'No panels are waiting for art'
+                    : 'Generate art for panels'
+                }
+              >
+                Draw ▾
+              </button>
+              {drawMenu && (
+                <div className="menu">
+                  <button
+                    className="menu-item"
+                    disabled={pending.page === 0}
+                    onClick={() => {
+                      setDrawMenu(false)
+                      void drawAll('page')
+                    }}
+                  >
+                    This page
+                    <span className="menu-count">{pending.page}</span>
+                  </button>
+                  <button
+                    className="menu-item"
+                    onClick={() => {
+                      setDrawMenu(false)
+                      void drawAll('book')
+                    }}
+                  >
+                    Whole manga
+                    <span className="menu-count">{pending.book}</span>
+                  </button>
+                  <p className="menu-note">
+                    One panel at a time. Stop whenever — finished panels are kept, and
+                    pressing Draw again resumes where it left off.
+                  </p>
+                </div>
+              )}
+            </span>
+          )}
 
           <span className="topbar-sep" />
 

@@ -53,6 +53,16 @@ export async function saveLlmSettings(settings: unknown): Promise<void> {
   await idbSet(META, LLM, settings)
 }
 
+const COMFY = 'comfy-settings'
+
+export async function loadComfySettings<T>(): Promise<T | undefined> {
+  return idbGet<T>(META, COMFY)
+}
+
+export async function saveComfySettings(settings: unknown): Promise<void> {
+  await idbSet(META, COMFY, settings)
+}
+
 /* ---------- project ---------- */
 
 export async function loadProject(): Promise<Project | undefined> {
@@ -72,7 +82,27 @@ export async function saveProject(project: Project): Promise<void> {
 
 const urlCache = new Map<string, string>()
 
-export async function assetUrl(id: string): Promise<string | undefined> {
+/**
+ * Remote assets, by id.
+ *
+ * Callers deep in the canvas and exporter only ever have an asset id, so the
+ * lookup has to live here rather than being threaded through every one of
+ * them. The index is small and rewritten whenever the library changes.
+ */
+const remoteUrls = new Map<string, string>()
+
+export function rememberRemoteAssets(assets: { id: string; remoteUrl?: string }[]): void {
+  remoteUrls.clear()
+  for (const asset of assets) {
+    if (asset.remoteUrl) remoteUrls.set(asset.id, asset.remoteUrl)
+  }
+}
+
+export async function assetUrl(id: string, remoteUrl?: string): Promise<string | undefined> {
+  // A remote asset has no bytes here; its own address is the source.
+  const remote = remoteUrl ?? remoteUrls.get(id)
+  if (remote) return remote
+
   const cached = urlCache.get(id)
   if (cached) return cached
 

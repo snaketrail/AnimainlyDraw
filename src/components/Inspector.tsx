@@ -8,7 +8,7 @@
 
 import { useState } from 'react'
 import { useStore } from '../store/useStore'
-import { BUBBLE_KINDS, isBubble, isImage, pageSizeOf } from '../lib/types'
+import { BUBBLE_KINDS, isBubble, isImage, pageSizeOf, randomSeed } from '../lib/types'
 import { stackPeers } from '../store/useStore'
 import { LAYOUTS, type Layout } from '../lib/layouts'
 
@@ -181,6 +181,8 @@ export function Inspector() {
   const addPanel = useStore((s) => s.addPanel)
   const deletePanel = useStore((s) => s.deletePanel)
   const splitPanel = useStore((s) => s.splitPanel)
+  const generatePanelArt = useStore((s) => s.generatePanelArt)
+  const generatingPanels = useStore((s) => s.generatingPanels)
 
   // The layout grid is tall; collapsing it brings bubbles and layers into view.
   const [layoutOpen, setLayoutOpen] = useState(true)
@@ -253,6 +255,44 @@ export function Inspector() {
               onCommit={(v) => updatePanel(panel.id, { h: v / 100 })}
             />
           </div>
+
+          {panel.prompt && (
+            <div className="gen">
+              <h3 className="sub">Art</h3>
+              <p className="panel-prompt">{panel.prompt}</p>
+              <div className="seed-row">
+                <label>
+                  Seed
+                  <input
+                    className="num seed-num"
+                    type="number"
+                    value={panel.seed ?? 0}
+                    onChange={(e) => updatePanel(panel.id, { seed: Number(e.target.value) })}
+                  />
+                </label>
+                <button
+                  className="link-btn"
+                  onClick={() => updatePanel(panel.id, { seed: randomSeed() })}
+                  title="Draw a different version of this panel"
+                >
+                  Re-roll
+                </button>
+              </div>
+
+              <button
+                className="btn btn-accent"
+                disabled={generatingPanels.includes(panel.id)}
+                onClick={() => void generatePanelArt(panel.id)}
+              >
+                {generatingPanels.includes(panel.id) ? 'Drawing…' : 'Draw this panel'}
+              </button>
+              <p className="hint no-top">
+                The style bible and any characters in this panel are added to the prompt
+                automatically. Keep the seed to redraw the same picture after editing the
+                wording; re-roll it for a different take.
+              </p>
+            </div>
+          )}
 
           <h3 className="sub">Split</h3>
           <div className="btn-row">

@@ -1,0 +1,36 @@
+#!/bin/sh
+#
+# Block commits that contain something shaped like an API key.
+#
+# This repo publishes to GitHub Pages, so a committed key is public the moment
+# it is pushed — and it stays in the history even after the file is deleted.
+# Rotating a leaked key is the only real remedy, so it is worth catching here.
+#
+# Enable once with:   git config core.hooksPath .githooks
+
+found=$(git diff --cached --name-only --diff-filter=ACM | while read -r file; do
+  # Skip this hook and anything binary.
+  case "$file" in
+    .githooks/*) continue ;;
+  esac
+  git show ":$file" 2>/dev/null | grep -nIE \
+    'AIza[0-9A-Za-z_-]{30,}|sk_[a-zA-Z0-9]{20,}|pk_[a-zA-Z0-9]{20,}|AQ\.[A-Za-z0-9_-]{30,}' \
+    | sed "s|^|$file:|"
+done)
+
+if [ -n "$found" ]; then
+  echo
+  echo "Commit blocked: this looks like an API key."
+  echo
+  echo "$found"
+  echo
+  echo "Keys belong in the app's settings, which live in your browser — never in"
+  echo "a file. If the key above is real, rotate it: once pushed it is public"
+  echo "permanently, even if you delete the file afterwards."
+  echo
+  echo "If it is a false positive, commit with --no-verify."
+  echo
+  exit 1
+fi
+
+exit 0
