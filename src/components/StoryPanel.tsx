@@ -21,7 +21,12 @@ import {
 } from '../lib/llm'
 import { composePrompt, randomSeed } from '../lib/types'
 import { IMAGE_MODELS } from '../lib/images'
-import { isPonyCheckpoint, listCheckpoints } from '../lib/comfy'
+import type { ComfyModels } from '../lib/comfy'
+import {
+  isPonyCheckpoint,
+  listModels as listComfyModels,
+  presetForUnet,
+} from '../lib/comfy'
 
 type Tab = 'plan' | 'story' | 'style' | 'cast' | 'art'
 
@@ -60,7 +65,13 @@ export function StoryPanel({ onClose }: { onClose: () => void }) {
   const [openChapter, setOpenChapter] = useState<number | null>(0)
 
   // ComfyUI
-  const [checkpoints, setCheckpoints] = useState<string[]>([])
+  const [comfyModels, setComfyModels] = useState<ComfyModels>({
+    checkpoints: [],
+    unets: [],
+    clips: [],
+    vaes: [],
+    clipTypes: [],
+  })
   const [comfyState, setComfyState] = useState<'idle' | 'checking' | 'ok' | 'error'>('idle')
   const [comfyError, setComfyError] = useState<string | null>(null)
 
@@ -70,19 +81,57 @@ export function StoryPanel({ onClose }: { onClose: () => void }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  /**
+   * Apply a split model's published sampler settings.
+   *
+   * A split model is not SDXL, and the app's SDXL defaults give visibly worse
+   * output on one. Anima's own workflow renders at 30 steps and CFG 4 on
+   * euler/simple, so selecting it should carry those across rather than expect
+   * the user to know them.
+   */
+  function selectUnet(unet: string) {
+    const preset = presetForUnet(unet)
+    setComfy({
+      kind: 'split',
+      unet,
+      ...(preset
+        ? {
+            clipType: preset.clipType,
+            steps: preset.steps,
+            cfg: preset.cfg,
+            samplerName: preset.samplerName,
+            scheduler: preset.scheduler,
+          }
+        : {}),
+    })
+  }
+
   async function findCheckpoints() {
     setComfyState('checking')
     setComfyError(null)
     try {
-      const found = await listCheckpoints(useStore.getState().comfy.baseUrl)
-      setCheckpoints(found)
+      const found = await listComfyModels(useStore.getState().comfy.baseUrl)
+      setComfyModels(found)
       setComfyState('ok')
-      if (found.length === 0) {
-        setComfyError('ComfyUI is running but has no checkpoints installed yet')
-      } else if (!found.includes(useStore.getState().comfy.checkpoint)) {
+
+      const comfyNow = useStore.getState().comfy
+      const hasSplit = found.unets.length > 0 && found.clips.length > 0 && found.vaes.length > 0
+
+      if (found.checkpoints.length === 0 && !hasSplit) {
+        setComfyError('ComfyUI is running but has no models installed yet')
+        return
+      }
+
+      // Fill in whichever kind the user is on, and fall back to the other when
+      // the one they are on has nothing installed.
+      if (comfyNow.kind === 'split' || found.checkpoints.length === 0) {
+        if (!found.unets.includes(comfyNow.unet)) selectUnet(found.unets[0] ?? '')
+        if (!found.clips.includes(comfyNow.clip)) setComfy({ clip: found.clips[0] ?? '' })
+        if (!found.vaes.includes(comfyNow.vae)) setComfy({ vae: found.vaes[0] ?? '' })
+      } else if (!found.checkpoints.includes(comfyNow.checkpoint)) {
         // Prefer a Pony checkpoint: it is what suits manga best.
-        const pony = found.find((c) => isPonyCheckpoint(c))
-        setComfy({ checkpoint: pony ?? found[0]! })
+        const pony = found.checkpoints.find((c) => isPonyCheckpoint(c))
+        setComfy({ checkpoint: pony ?? found.checkpoints[0]! })
       }
     } catch (e) {
       setComfyState('error')
@@ -627,24 +676,133 @@ export function StoryPanel({ onClose }: { onClose: () => void }) {
                 )}
 
                 <label className="field">
-                  Checkpoint
+                  Model type
                   <select
                     className="select"
-                    value={comfy.checkpoint}
-                    onChange={(e) => setComfy({ checkpoint: e.target.value })}
-                    disabled={checkpoints.length === 0}
+                    value={comfy.kind}
+                    onChange={(e) =>
+                      setComfy({ kind: e.target.value as 'checkpoint' | 'split' })
+                    }
                   >
-                    {checkpoints.length === 0 ? (
-                      <option value="">no checkpoints found</option>
-                    ) : (
-                      checkpoints.map((c) => (
-                        <option key={c} value={c}>
-                          {c}
-                        </option>
-                      ))
-                    )}
+                    <option value="checkpoint">
+                      Single checkpoint (SD / SDXL / Pony)
+                    </option>
+                    <option value="split">
+                      Split model (separate UNet, text encoder, VAE)
+                    </option>
                   </select>
                 </label>
+
+                {comfy.kind === 'checkpoint' ? (
+                  <label className="field">
+                    Checkpoint
+                    <select
+                      className="select"
+                      value={comfy.checkpoint}
+                      onChange={(e) => setComfy({ checkpoint: e.target.value })}
+                      disabled={comfyModels.checkpoints.length === 0}
+                    >
+                      {comfyModels.checkpoints.length === 0 ? (
+                        <option value="">no checkpoints found</option>
+                      ) : (
+                        comfyModels.checkpoints.map((c) => (
+                          <option key={c} value={c}>
+                            {c}
+                          </option>
+                        ))
+                      )}
+                    </select>
+                  </label>
+                ) : (
+                  <>
+                    <label className="field">
+                      UNet / diffusion model
+                      <select
+                        className="select"
+                        value={comfy.unet}
+                        onChange={(e) => selectUnet(e.target.value)}
+                        disabled={comfyModels.unets.length === 0}
+                      >
+                        {comfyModels.unets.length === 0 ? (
+                          <option value="">none in models/diffusion_models</option>
+                        ) : (
+                          comfyModels.unets.map((c) => (
+                            <option key={c} value={c}>
+                              {c}
+                            </option>
+                          ))
+                        )}
+                      </select>
+                    </label>
+
+                    <label className="field">
+                      Text encoder
+                      <select
+                        className="select"
+                        value={comfy.clip}
+                        onChange={(e) => setComfy({ clip: e.target.value })}
+                        disabled={comfyModels.clips.length === 0}
+                      >
+                        {comfyModels.clips.length === 0 ? (
+                          <option value="">none in models/text_encoders</option>
+                        ) : (
+                          comfyModels.clips.map((c) => (
+                            <option key={c} value={c}>
+                              {c}
+                            </option>
+                          ))
+                        )}
+                      </select>
+                    </label>
+
+                    <div className="field-row">
+                      <label>
+                        VAE
+                        <select
+                          className="select"
+                          value={comfy.vae}
+                          onChange={(e) => setComfy({ vae: e.target.value })}
+                          disabled={comfyModels.vaes.length === 0}
+                        >
+                          {comfyModels.vaes.length === 0 ? (
+                            <option value="">none in models/vae</option>
+                          ) : (
+                            comfyModels.vaes.map((c) => (
+                              <option key={c} value={c}>
+                                {c}
+                              </option>
+                            ))
+                          )}
+                        </select>
+                      </label>
+                      <label>
+                        Encoder type
+                        <select
+                          className="select"
+                          value={comfy.clipType}
+                          onChange={(e) => setComfy({ clipType: e.target.value })}
+                        >
+                          {(comfyModels.clipTypes.length > 0
+                            ? comfyModels.clipTypes
+                            : [comfy.clipType]
+                          ).map((t) => (
+                            <option key={t} value={t}>
+                              {t}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                    </div>
+
+                    {presetForUnet(comfy.unet) && (
+                      <p className="hint no-top">
+                        {presetForUnet(comfy.unet)!.label} detected - its published
+                        sampler settings have been applied. This model draws ink
+                        linework natively, so it needs no score tags.
+                      </p>
+                    )}
+                  </>
+                )}
 
                 <div className="field-row">
                   <label>
@@ -679,7 +837,7 @@ export function StoryPanel({ onClose }: { onClose: () => void }) {
                   Keep panels clothed
                 </label>
 
-                {isPonyCheckpoint(comfy.checkpoint) && (
+                {comfy.kind === 'checkpoint' && isPonyCheckpoint(comfy.checkpoint) && (
                   <p className="hint no-top">
                     Pony checkpoint detected — the score tags it was trained on are added
                     automatically.{' '}

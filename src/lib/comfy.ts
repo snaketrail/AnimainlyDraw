@@ -12,10 +12,38 @@
  * instead of baked into a JSON blob the user has to edit.
  */
 
+/**
+ * How a model's weights are packaged.
+ *
+ * `checkpoint` - one .safetensors holding UNet, CLIP and VAE together. This is
+ * the SD/SDXL norm, and `CheckpointLoaderSimple` unpacks all three.
+ *
+ * `split` - UNet, text encoder and VAE as three separate files, each with its
+ * own loader. Newer models ship this way (Anima pairs its UNet with a Qwen
+ * text encoder and a Qwen VAE), and they cannot be loaded as a checkpoint at
+ * all: `CheckpointLoaderSimple` has no CLIP or VAE output to give.
+ */
+export type ComfyModelKind = 'checkpoint' | 'split'
+
 export interface ComfySettings {
   baseUrl: string
+  /** Single-file model, when `kind` is 'checkpoint'. */
   checkpoint: string
-  /** Sampling steps. 25 is a reasonable default for SDXL-class models. */
+  /** Which packaging the selected model uses. */
+  kind: ComfyModelKind
+  /** The three files a split model needs. Ignored for a checkpoint. */
+  unet: string
+  clip: string
+  vae: string
+  /**
+   * Text-encoder family for a split model's CLIPLoader.
+   *
+   * ComfyUI cannot infer this from the file, and a wrong value produces
+   * nonsense rather than an error. Anima's Qwen encoder loads under
+   * 'stable_diffusion', which is what its own reference workflow specifies.
+   */
+  clipType: string
+  /** Sampling steps. 25 suits SDXL; Anima's reference workflow uses 30. */
   steps: number
   cfg: number
   samplerName: string
@@ -27,11 +55,49 @@ export interface ComfySettings {
 export const DEFAULT_COMFY: ComfySettings = {
   baseUrl: 'http://127.0.0.1:8188',
   checkpoint: '',
+  kind: 'checkpoint',
+  unet: '',
+  clip: '',
+  vae: '',
+  clipType: 'stable_diffusion',
   steps: 25,
   cfg: 7,
   samplerName: 'dpmpp_2m',
   scheduler: 'karras',
   safeMode: true,
+}
+
+/**
+ * Sampler settings a split model expects, keyed by a pattern in its UNet name.
+ *
+ * These are not preferences. Anima's published workflow renders at 30 steps,
+ * CFG 4, euler/simple; driving it with the SDXL defaults of CFG 7 and
+ * dpmpp_2m/karras gives visibly worse output. Applying them on selection means
+ * the user does not have to know that.
+ */
+export const SPLIT_MODEL_PRESETS: {
+  match: RegExp
+  label: string
+  steps: number
+  cfg: number
+  samplerName: string
+  scheduler: string
+  clipType: string
+}[] = [
+  {
+    match: /anima/i,
+    label: 'Anima',
+    steps: 30,
+    cfg: 4,
+    samplerName: 'euler',
+    scheduler: 'simple',
+    clipType: 'stable_diffusion',
+  },
+]
+
+/** The preset for a UNet file, if one is known. */
+export function presetForUnet(unet: string) {
+  return SPLIT_MODEL_PRESETS.find((preset) => preset.match.test(unet))
 }
 
 /**
@@ -72,10 +138,11 @@ export function isPonyCheckpoint(name: string): boolean {
 export function decorate(
   prompt: string,
   negative: string,
-  checkpoint: string,
+  /** The active model's filename, whichever kind it is. */
+  modelName: string,
   safeMode = true,
 ): { positive: string; negative: string } {
-  const pony = isPonyCheckpoint(checkpoint)
+  const pony = isPonyCheckpoint(modelName)
 
   return {
     positive: [
@@ -105,12 +172,22 @@ export interface ComfyRequest {
   seed: number
 }
 
+/** The model file that identifies the active model, whichever kind it is. */
+export function activeModelName(settings: ComfySettings): string {
+  return settings.kind === 'split' ? settings.unet : settings.checkpoint
+}
+
 /**
- * A plain SDXL text-to-image graph.
+ * A minimal text-to-image graph.
  *
- * Deliberately minimal — checkpoint, two text encodes, an empty latent, one
- * sampler, decode, save. Anything more (refiners, upscalers, LoRAs) would add
- * nodes the user must install, and this has to work on a stock ComfyUI.
+ * Two shapes, because two packagings exist. Both end the same way — two text
+ * encodes, an empty latent, one sampler, decode, save — and differ only in how
+ * model, CLIP and VAE are loaded. Anything more (refiners, upscalers, LoRAs)
+ * would add nodes the user must install, and this has to work on a stock
+ * ComfyUI.
+ *
+ * Node ids are shared between both shapes so the rest of the client does not
+ * care which was built.
  */
 export function buildWorkflow(
   settings: ComfySettings,
@@ -119,22 +196,51 @@ export function buildWorkflow(
   const { positive, negative } = decorate(
     request.prompt,
     request.negative,
-    settings.checkpoint,
+    activeModelName(settings),
     settings.safeMode,
   )
 
+  // A split model loads its three parts separately; CLIP and VAE come from
+  // their own nodes rather than from outputs 1 and 2 of a checkpoint.
+  const loaders: Record<string, ComfyNode> =
+    settings.kind === 'split'
+      ? {
+          '1': {
+            class_type: 'UNETLoader',
+            inputs: { unet_name: settings.unet, weight_dtype: 'default' },
+          },
+          '1c': {
+            class_type: 'CLIPLoader',
+            inputs: {
+              clip_name: settings.clip,
+              type: settings.clipType,
+              device: 'default',
+            },
+          },
+          '1v': {
+            class_type: 'VAELoader',
+            inputs: { vae_name: settings.vae },
+          },
+        }
+      : {
+          '1': {
+            class_type: 'CheckpointLoaderSimple',
+            inputs: { ckpt_name: settings.checkpoint },
+          },
+        }
+
+  const clip: [string, number] = settings.kind === 'split' ? ['1c', 0] : ['1', 1]
+  const vae: [string, number] = settings.kind === 'split' ? ['1v', 0] : ['1', 2]
+
   return {
-    '1': {
-      class_type: 'CheckpointLoaderSimple',
-      inputs: { ckpt_name: settings.checkpoint },
-    },
+    ...loaders,
     '2': {
       class_type: 'CLIPTextEncode',
-      inputs: { text: positive, clip: ['1', 1] },
+      inputs: { text: positive, clip },
     },
     '3': {
       class_type: 'CLIPTextEncode',
-      inputs: { text: negative, clip: ['1', 1] },
+      inputs: { text: negative, clip },
     },
     '4': {
       class_type: 'EmptyLatentImage',
@@ -157,7 +263,7 @@ export function buildWorkflow(
     },
     '6': {
       class_type: 'VAEDecode',
-      inputs: { samples: ['5', 0], vae: ['1', 2] },
+      inputs: { samples: ['5', 0], vae },
     },
     '7': {
       class_type: 'SaveImage',
@@ -181,6 +287,27 @@ async function comfyFetch(base: string, path: string, init?: RequestInit): Promi
   }
 }
 
+/** Read one loader node's file list from /object_info. */
+async function listForNode(
+  baseUrl: string,
+  node: string,
+  field: string,
+): Promise<string[]> {
+  const response = await comfyFetch(baseUrl, `/object_info/${node}`)
+  if (!response.ok) return []
+
+  const data = (await response.json()) as Record<
+    string,
+    { input?: { required?: Record<string, unknown> } }
+  >
+  const entry = data[node]?.input?.required?.[field]
+  // The shape is [[...options], {...opts}] - the first element is the list.
+  const options = Array.isArray(entry) ? entry[0] : undefined
+  return Array.isArray(options)
+    ? options.filter((option): option is string => typeof option === 'string')
+    : []
+}
+
 /** Checkpoints ComfyUI can see. Empty means none are installed yet. */
 export async function listCheckpoints(baseUrl: string): Promise<string[]> {
   const response = await comfyFetch(baseUrl, '/object_info/CheckpointLoaderSimple')
@@ -193,6 +320,33 @@ export async function listCheckpoints(baseUrl: string): Promise<string[]> {
   return data.CheckpointLoaderSimple?.input?.required?.ckpt_name?.[0] ?? []
 }
 
+export interface ComfyModels {
+  checkpoints: string[]
+  unets: string[]
+  clips: string[]
+  vaes: string[]
+  /** Text-encoder families this ComfyUI build offers. */
+  clipTypes: string[]
+}
+
+/**
+ * Everything ComfyUI can load, in one round trip.
+ *
+ * Asked together because a user with a split model has no checkpoint to show,
+ * and a UI that only listed checkpoints would report "none installed" while
+ * the model sat there perfectly loadable.
+ */
+export async function listModels(baseUrl: string): Promise<ComfyModels> {
+  const [checkpoints, unets, clips, vaes, clipTypes] = await Promise.all([
+    listForNode(baseUrl, 'CheckpointLoaderSimple', 'ckpt_name'),
+    listForNode(baseUrl, 'UNETLoader', 'unet_name'),
+    listForNode(baseUrl, 'CLIPLoader', 'clip_name'),
+    listForNode(baseUrl, 'VAELoader', 'vae_name'),
+    listForNode(baseUrl, 'CLIPLoader', 'type'),
+  ])
+  return { checkpoints, unets, clips, vaes, clipTypes }
+}
+
 /** Queue a workflow and wait for the finished picture. */
 export async function generate(
   settings: ComfySettings,
@@ -200,7 +354,11 @@ export async function generate(
   signal?: AbortSignal,
   onProgress?: (message: string) => void,
 ): Promise<Blob> {
-  if (!settings.checkpoint) {
+  if (settings.kind === 'split') {
+    if (!settings.unet || !settings.clip || !settings.vae) {
+      throw new Error('A split model needs a UNet, a text encoder and a VAE')
+    }
+  } else if (!settings.checkpoint) {
     throw new Error('Choose a checkpoint first')
   }
 
